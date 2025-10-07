@@ -1,0 +1,85 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug Windows (Tasks 1-4)",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build-windows/bin/OSSP_Project_Windows.exe",
+            "args": ["${input:windowsTaskNumber}", "${input:windowsCustomArgs}"],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ],
+            "preLaunchTask": "build-windows",
+            "miDebuggerPath": "C:\\msys64\\ucrt64\\bin\\gdb.exe"
+        },
+        {
+            "name": "Debug Linux (Tasks 5-8)",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build-linux/bin/OSSP_Project_Linux",
+            "args": ["${input:linuxTaskNumber}", "${input:linuxCustomArgs}"],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ],
+            "preLaunchTask": "build-linux",
+            "miDebuggerPath": "C:\\msys64\\ucrt64\\bin\\gdb.exe"
+        }
+    ],
+    "inputs": [
+        {
+            "id": "windowsTaskNumber",
+            "type": "promptString",
+            "description": "Enter Windows task number (1-4)",
+            "default": "1"
+        },
+        {
+            "id": "windowsCustomArgs",
+            "type": "promptString",
+            "description": "Enter Windows arguments",
+            "default": "-f test.bin"
+        },
+        {
+            "id": "linuxTaskNumber",
+            "type": "promptString",
+            "description": "Enter Linux task number (5-8)",
+            "default": "5"
+        },
+        {
+            "id": "linuxCustomArgs",
+            "type": "promptString",
+            "description": "Enter Linux arguments",
+            "default": ""
+        },
+        {
+            "id": "taskNumber",
+            "type": "promptString",
+            "description": "Enter task number (1-8)",
+            "default": "1"
+        },
+        {
+            "id": "customArgs",
+            "type": "promptString",
+            "description": "Enter arguments",
+            "default": "-f test.bin"
+        }
+    ]
+}
