@@ -1,8 +1,8 @@
-#DAA
+# DAA
 ## Data Analysis Algorithms
-#DPSS
+# DPSS
 ## Data Processing Service Systems
-#OSSP
+# OSSP
 ## Operating Systems and System Programming
-#PTMS
+# PTMS
 ## Probability Theory and Mathematical Statistics
