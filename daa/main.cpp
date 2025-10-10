@@ -1,11 +1,11 @@
 #include <iostream>
 #include <chrono>
 #include <cmath>
-#include <openmp.h>
-#include <utils.h>
+#include "openmp.h"
+#include "utils.h"
 
 int main() {
-    const int MATRIX_SIZE = 1000;
+    const int MATRIX_SIZE = 5000;
     std::vector<int> thread_counts = {1, 2, 4, 8, 16};
     
     std::cout << "Matrix Multiplication Benchmark [5000x5000]" << std::endl;
