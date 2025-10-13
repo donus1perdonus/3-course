@@ -4,11 +4,18 @@
 #include "openmp.h"
 #include "utils.h"
 
-int main() {
-    const int MATRIX_SIZE = 5000;
+int main(int argc, char** argv) {
+    int MATRIX_SIZE = 5000;
+    if (argc > 1) {
+        try {
+            MATRIX_SIZE = std::max(1, std::stoi(argv[1]));
+        } catch (...) {
+            // keep default on parse error
+        }
+    }
     std::vector<int> thread_counts = {1, 2, 4, 8, 16};
     
-    std::cout << "Matrix Multiplication Benchmark [5000x5000]" << std::endl;
+    std::cout << "Matrix Multiplication Benchmark [" << MATRIX_SIZE << "x" << MATRIX_SIZE << "]" << std::endl;
     std::cout << "===========================================" << std::endl;
     
     MatrixMultiplier multiplier(MATRIX_SIZE);

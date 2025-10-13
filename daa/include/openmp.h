@@ -8,7 +8,7 @@ class MatrixMultiplier
 {
 private:
 
-    std::vector<std::vector<double>> A, B, C;
+    std::vector<std::vector<double>> A, B, BT, C;
     int size;
 
 public:
@@ -16,6 +16,7 @@ public:
     MatrixMultiplier(int n);
 
     void initializeMatrices();
+    void transposeB();
 
     // Уровень 1: Параллелизация внешнего цикла
     void multiplyLevel1(int num_threads);
