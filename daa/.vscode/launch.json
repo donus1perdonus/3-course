@@ -9,7 +9,12 @@
             "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
-            "environment": [],
+            "environment": [
+                {
+                    "name": "OMP_NUM_THREADS",
+                    "value": "16"
+                }
+            ],
             "externalConsole": false,
             "MIMode": "gdb",
             "setupCommands": [
@@ -17,6 +22,10 @@
                     "description": "Enable pretty-printing for gdb",
                     "text": "-enable-pretty-printing",
                     "ignoreFailures": true
+                },
+                {
+                    "description": "Set OpenMP threads for debugging",
+                    "text": "set environment OMP_NUM_THREADS=4"
                 }
             ],
             "preLaunchTask": "build and run",

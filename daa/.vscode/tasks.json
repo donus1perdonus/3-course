@@ -9,12 +9,16 @@
                 "-B",
                 "build",
                 "-S",
-                "."
+                ".",
+                "-DCMAKE_BUILD_TYPE=Debug"
             ],
             "group": "build",
-            "problemMatcher": [
-                "$gcc"
-            ]
+            "problemMatcher": ["$gcc"],
+            "options": {
+                "env": {
+                    "OMP_NUM_THREADS": "16"
+                }
+            }
         },
         {
             "label": "build and run",
@@ -23,12 +27,27 @@
             "command": "cmake",
             "args": [
                 "--build",
-                "build"
+                "build",
+                "--config",
+                "Debug"
             ],
             "group": "build",
-            "problemMatcher": [
-                "$gcc"
-            ]
+            "problemMatcher": ["$gcc"],
+            "options": {
+                "env": {
+                    "OMP_NUM_THREADS": "16"
+                }
+            }
+        },
+        {
+            "label": "clean",
+            "type": "shell",
+            "command": "rm",
+            "args": [
+                "-rf",
+                "build"
+            ],
+            "group": "build"
         }
     ]
 }

@@ -5,7 +5,7 @@
 #include "utils.h"
 
 int main(int argc, char** argv) {
-    int MATRIX_SIZE = 5000;
+    int MATRIX_SIZE = 1000;
     if (argc > 1) {
         try {
             MATRIX_SIZE = std::max(1, std::stoi(argv[1]));
