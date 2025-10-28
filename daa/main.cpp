@@ -4,6 +4,7 @@
 #include <cstdlib>
 #include <ctime>
 #include "openmp.h"
+#include "opencl.h"
 #include "utils.h"
 
 void runTask1(const std::vector<std::string>& flags) 
@@ -60,6 +61,47 @@ void runTask1(const std::vector<std::string>& flags)
             std::cout << threads << "\t" << time << "\t" << speedup << "\t\t" 
                       << (correct ? "Да" : "Нет") << std::endl;
         }
+    }
+}
+
+void runTask3(const std::vector<std::string>& flags) 
+{
+    std::string task = "3.1";
+    int matrix_size = 1000;
+    
+    // Парсим флаги
+    if (!flags.empty()) {
+        // Проверяем, указано ли подзадание
+        if (flags[0] == "3.1") {
+            printGPUInfo();
+            return;
+        } else if (flags[0] == "3.2") {
+            task = "3.2";
+            // Проверяем, указан ли размер матрицы
+            if (flags.size() > 1) {
+                try {
+                    matrix_size = std::max(1, std::stoi(flags[1]));
+                } catch (...) {
+                    std::cerr << "Ошибка: неверный размер матрицы. Используется значение по умолчанию (1000)." << std::endl;
+                }
+            }
+            multiplyMatricesGPU(matrix_size);
+            return;
+        } else {
+            // Если первый аргумент число, считаем это размером матрицы для 3.2
+            try {
+                matrix_size = std::max(1, std::stoi(flags[0]));
+                task = "3.2";
+            } catch (...) {
+                // Если не число, используем по умолчанию 3.1
+            }
+        }
+    }
+    
+    if (task == "3.1") {
+        printGPUInfo();
+    } else {
+        multiplyMatricesGPU(matrix_size);
     }
 }
 
@@ -133,7 +175,7 @@ int main(int argc, char** argv)
             runTask2(args.flags);
             break;
         case 3:
-            std::cout << "Задание 3: Работа с GPU (CUDA/OpenCL) - пока не реализовано" << std::endl;
+            runTask3(args.flags);
             break;
         default:
             std::cerr << "Ошибка: неизвестный номер задания " << args.task_number << std::endl;

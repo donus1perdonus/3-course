@@ -44,7 +44,7 @@ void printHelp()
     std::cout << "Задания:" << std::endl;
     std::cout << "  1 - Перемножение матриц с OpenMP" << std::endl;
     std::cout << "  2 - Вычисление числа π с заданной точностью" << std::endl;
-    std::cout << "  3 - Работа с GPU (CUDA/OpenCL)" << std::endl;
+    std::cout << "  3 - Работа с GPU (OpenCL)" << std::endl;
     std::cout << std::endl;
     std::cout << "Флаги для задания 1:" << std::endl;
     std::cout << "  <размер_матрицы> - размер матрицы (по умолчанию 1000)" << std::endl;
@@ -55,8 +55,14 @@ void printHelp()
     std::cout << "  --monte-carlo - использовать метод Монте-Карло (по умолчанию)" << std::endl;
     std::cout << "  --integration - использовать метод численного интегрирования" << std::endl;
     std::cout << std::endl;
+    std::cout << "Флаги для задания 3:" << std::endl;
+    std::cout << "  3.1 - Вывести информацию о подключённых GPU устройствах" << std::endl;
+    std::cout << "  3.2 <размер> - Умножение матриц на GPU (по умолчанию размер 1000)" << std::endl;
+    std::cout << std::endl;
     std::cout << "Примеры:" << std::endl;
     std::cout << "  DAA.exe 1 2000" << std::endl;
     std::cout << "  DAA.exe 2 0.001 8 --integration" << std::endl;
     std::cout << "  DAA.exe 2 0.00001 16 --monte-carlo" << std::endl;
+    std::cout << "  DAA.exe 3 3.1                 # Информация о GPU" << std::endl;
+    std::cout << "  DAA.exe 3 3.2 2000            # Умножение матриц на GPU" << std::endl;
 }

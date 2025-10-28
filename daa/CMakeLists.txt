@@ -18,6 +18,7 @@ add_executable(DAA
     main.cpp
     src/openmp.cpp
     src/utils.cpp
+    src/opencl.cpp
 )
 
 target_include_directories(DAA PUBLIC
@@ -27,6 +28,17 @@ target_include_directories(DAA PUBLIC
 # Добавление флагов OpenMP
 target_compile_options(DAA PRIVATE ${OPENMP_FLAGS})
 target_link_libraries(DAA ${OPENMP_LIBRARIES})
+
+# Поиск и добавление OpenCL
+find_package(OpenCL QUIET)
+if(OpenCL_FOUND)
+    target_include_directories(DAA PRIVATE ${OpenCL_INCLUDE_DIRS})
+    target_link_libraries(DAA ${OpenCL_LIBRARIES})
+    target_compile_definitions(DAA PRIVATE ENABLE_OPENCL)
+    message(STATUS "OpenCL найден")
+else()
+    message(WARNING "OpenCL не найден. GPU функции могут не работать.")
+endif()
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
