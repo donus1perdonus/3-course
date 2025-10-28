@@ -5,8 +5,8 @@
             "name": "Пук среньк",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/build/DAA",
-            "args": [],
+            "program": "${workspaceFolder}/build/DAA.exe",
+            "args": ["${input:taskNumber}", "${input:flags}"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [
@@ -33,6 +33,18 @@
             "logging": {
                 "engineLogging": true
             }
+        }
+    ],
+    "inputs": [
+        {
+            "id": "taskNumber",
+            "description": "Номер задания (1, 2, 3)",
+            "type": "promptString"
+        },
+        {
+            "id": "flags",
+            "description": "Флаги для задания (разделенные пробелами)",
+            "type": "promptString"
         }
     ]
 }
