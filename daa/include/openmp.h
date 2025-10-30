@@ -34,4 +34,21 @@ public:
     bool verifyResult(const std::vector<std::vector<double>>& reference);
 };
 
+// Класс для вычисления числа π с заданной точностью
+class PiCalculator 
+{
+private:
+    double precision;
+    int num_threads;
+
+public:
+    PiCalculator(double precision, int num_threads = 4);
+    
+    // Вычисление π методом Монте-Карло с удвоением интервалов
+    double calculatePi();
+    
+    // Вычисление π методом численного интегрирования (формула Лейбница)
+    double calculatePiIntegration();
+};
+
 #endif // OPENMP_MATRIX_MULTIPLIER_H
