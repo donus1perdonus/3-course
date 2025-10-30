@@ -53,24 +53,20 @@ int main(int argc, char *argv[]) {
             task2_main();
             break;
         case 3:
-            if (argc < 3) {
+            if (argc < 4) {
                 fprintf(stderr, "Ошибка: для задания 3 требуется указать исходный и целевой файлы\n");
                 printf("Использование: %s 3 <исходный_файл> <целевой_файл>\n", argv[0]);
                 return 1;
             }
-            
-            // Парсим аргументы для задания 3
-            char *task3_args_str = argv[2];
-            char *source_file = strtok(task3_args_str, " ");
-            char *dest_file = strtok(NULL, " ");
-            
+            char *source_file = argv[2];
+            char *dest_file = argv[3];
             if (source_file == NULL || dest_file == NULL) {
-                fprintf(stderr, "Ошибка: ожидается формат '<исходный_файл> <целевой_файл>', получено: '%s'\n", task3_args_str);
+                fprintf(stderr, "Ошибка: ожидается формат '<исходный_файл> <целевой_файл>', получено: ");
+                for (int i = 2; i < argc; ++i) fprintf(stderr, "%s ", argv[i]);
+                fprintf(stderr, "\n");
                 printf("Использование: %s 3 <исходный_файл> <целевой_файл>\n", argv[0]);
                 return 1;
             }
-            
-            // Создаем новый argv для task3_main
             char *task3_argv[] = {"task3", source_file, dest_file, NULL};
             task3_main(3, task3_argv);
             break;
