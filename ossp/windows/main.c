@@ -71,32 +71,21 @@ int main(int argc, char *argv[]) {
             task3_main(3, task3_argv);
             break;
         case 4:
-            if (argc < 3) {
+            if (argc < 4) {
                 fprintf(stderr, "Ошибка: для задания 4 требуется указать файл и флаг\n");
                 printf("Использование: %s 4 <файл> <флаг> [параметры]\n", argv[0]);
                 return 1;
             }
-            
-            // Парсим аргументы для задания 4
-            char *task4_args_str = argv[2];
-            char *file_path = strtok(task4_args_str, " ");
-            char *task4_flag = strtok(NULL, " ");
-            char *param = strtok(NULL, " ");
-            
+            char *file_path = argv[2];
+            char *task4_flag = argv[3];
+            char *param = argc > 4 ? argv[4] : NULL;
             if (file_path == NULL || task4_flag == NULL) {
-                fprintf(stderr, "Ошибка: ожидается формат '<файл> <флаг> [параметры]', получено: '%s'\n", task4_args_str);
+                fprintf(stderr, "Ошибка: ожидается формат '<файл> <флаг> [параметры]'");
                 printf("Использование: %s 4 <файл> <флаг> [параметры]\n", argv[0]);
                 return 1;
             }
-            
-            // Создаем новый argv для task4_main
             char *task4_argv[5] = {"task4", file_path, task4_flag, param, NULL};
-            int task4_argc = 4;
-            if (param == NULL) {
-                task4_argc = 3;
-                task4_argv[3] = NULL;
-            }
-            
+            int task4_argc = (param == NULL) ? 3 : 4;
             task4_main(task4_argc, task4_argv);
             break;
         default:
