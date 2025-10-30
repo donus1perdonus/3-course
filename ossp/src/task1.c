@@ -5,23 +5,23 @@
 void print_file_position(FILE *file) {
     long position = ftell(file);
     if (position == -1L) {
-        perror("Error getting file position");
+        perror("Ошибка при получении позиции в файле");
         return;
     }
-    printf("Current file position: %ld\n", position);
+    printf("Текущая позиция в файле: %ld\n", position);
 }
 
 void task1_main(int argc, char *argv[]) {
     printf("=== Задание 1 ===\n");
     
     if (argc < 3) {
-        fprintf(stderr, "Usage: task1 -f <filename>\n");
+        fprintf(stderr, "Использование: task1 -f <имя_файла>\n");
         return;
     }
 
     if (strcmp(argv[1], "-f") != 0) {
-        fprintf(stderr, "Error: expected -f flag, got '%s'\n", argv[1]);
-        fprintf(stderr, "Usage: task1 -f <filename>\n");
+        fprintf(stderr, "Ошибка: ожидался флаг -f, получено '%s'\n", argv[1]);
+        fprintf(stderr, "Использование: task1 -f <имя_файла>\n");
         return;
     }
 
@@ -32,23 +32,23 @@ void task1_main(int argc, char *argv[]) {
     // Создание и запись файла
     FILE *file = fopen(filename, "wb");
     if (file == NULL) {
-        perror("Error creating file");
+        perror("Ошибка при создании файла");
         return;
     }
 
     size_t written = fwrite(data, 1, data_size, file);
     if (written != data_size) {
-        perror("Error writing to file");
+        perror("Ошибка при записи в файл");
         fclose(file);
         return;
     }
 
     if (fclose(file) != 0) {
-        perror("Error closing file");
+        perror("Ошибка при закрытии файла");
         return;
     }
 
-    printf("File created successfully with data: ");
+    printf("Файл успешно создан с данными: ");
     for (size_t i = 0; i < data_size; i++) {
         printf("%d ", data[i]);
     }
@@ -57,49 +57,49 @@ void task1_main(int argc, char *argv[]) {
     // Чтение файла с побайтовым выводом
     file = fopen(filename, "rb");
     if (file == NULL) {
-        perror("Error opening file for reading");
+        perror("Ошибка при открытии файла для чтения");
         return;
     }
 
-    printf("Reading file byte by byte:\n");
+    printf("Чтение файла по байтам:\n");
     unsigned char byte;
     size_t position = 0;
     
     while (fread(&byte, 1, 1, file) == 1) {
-        printf("Position: %zu, Byte: %d\n", position, byte);
+        printf("Позиция: %zu, Байт: %d\n", position, byte);
         print_file_position(file);
-        printf("EOF indicator: %d\n", feof(file));
-        printf("Error indicator: %d\n", ferror(file));
+        printf("Индикатор конца файла (EOF): %d\n", feof(file));
+        printf("Индикатор ошибки: %d\n", ferror(file));
         printf("\n");
         position++;
     }
 
     if (ferror(file)) {
-        perror("Error reading file");
+        perror("Ошибка при чтении файла");
         fclose(file);
         return;
     }
 
     if (fclose(file) != 0) {
-        perror("Error closing file");
+        perror("Ошибка при закрытии файла");
         return;
     }
 
     // Повторное открытие и использование fseek
     file = fopen(filename, "rb");
     if (file == NULL) {
-        perror("Error reopening file");
+        perror("Ошибка при повторном открытии файла");
         return;
     }
 
     // Перемещение на 3 байта от начала
     if (fseek(file, 3, SEEK_SET) != 0) {
-        perror("Error seeking in file");
+        perror("Ошибка при перемещении по файлу (fseek)");
         fclose(file);
         return;
     }
 
-    printf("After fseek to position 3:\n");
+    printf("После перехода (fseek) к позиции 3:\n");
     print_file_position(file);
     printf("\n");
 
@@ -109,24 +109,24 @@ void task1_main(int argc, char *argv[]) {
     
     if (bytes_read != 4) {
         if (ferror(file)) {
-            perror("Error reading from file");
+            perror("Ошибка при чтении из файла");
         } else {
-            printf("Could only read %zu bytes instead of 4\n", bytes_read);
+            printf("Удалось прочитать только %zu байта из 4\n", bytes_read);
         }
         fclose(file);
         return;
     }
 
-    printf("After reading 4 bytes:\n");
+    printf("После чтения 4 байтов:\n");
     print_file_position(file);
-    printf("Buffer contains: ");
+    printf("Буфер содержит: ");
     for (size_t i = 0; i < 4; i++) {
         printf("%d ", buffer[i]);
     }
     printf("\n");
 
     if (fclose(file) != 0) {
-        perror("Error closing file");
+        perror("Ошибка при закрытии файла");
         return;
     }
 }

@@ -291,6 +291,11 @@ void print_help(void) {
     printf("  Exit                    - завершить работу программы\n\n");
 }
 
+void clear_stdin(void) {
+    int c;
+    while ((c = getchar()) != '\n' && c != EOF) {}
+}
+
 // Основной цикл оболочки
 void shell_loop(ShellSystem* system) {
     char command[MAX_COMMAND_LEN];
@@ -313,23 +318,25 @@ void shell_loop(ShellSystem* system) {
             int choice;
             if (scanf("%d", &choice) != 1) {
                 printf("Ошибка: неверный ввод.\n");
+                clear_stdin();
                 continue;
             }
+            clear_stdin();
             
             if (choice == 1) {
                 printf("Введите логин: ");
-                scanf("%6s", username);
+                scanf("%6s", username); clear_stdin();
                 printf("Введите PIN: ");
                 char pin_str[10];
-                get_hidden_input(pin_str, sizeof(pin_str));
+                get_hidden_input(pin_str, sizeof(pin_str)); clear_stdin();
                 int pin = atoi(pin_str);
                 login_user(system, username, pin);
             } else if (choice == 2) {
                 printf("Введите логин (до 6 символов, только буквы и цифры): ");
-                scanf("%6s", username);
+                scanf("%6s", username); clear_stdin();
                 printf("Введите PIN (0-100000): ");
                 char pin_str[10];
-                get_hidden_input(pin_str, sizeof(pin_str));
+                get_hidden_input(pin_str, sizeof(pin_str)); clear_stdin();
                 int pin = atoi(pin_str);
                 register_user(system, username, pin);
             } else if (choice == 3) {
@@ -349,7 +356,7 @@ void shell_loop(ShellSystem* system) {
             }
             
             printf("\n[%s@shell] $ ", system->current_user->login);
-            scanf("%s", command);
+            scanf("%s", command); clear_stdin();
             
             // Увеличиваем счетчик запросов
             system->current_user->current_requests++;
@@ -360,15 +367,15 @@ void shell_loop(ShellSystem* system) {
                 cmd_date();
             } else if (strcmp(command, "Howmuch") == 0) {
                 printf("Введите дату и время (дд:ММ:гггг чч:мм:сс): ");
-                scanf(" %19[^\n]", datetime);
+                scanf(" %19[^\n]", datetime); clear_stdin();
                 printf("Введите флаг (-s, -m, -h, -y): ");
-                scanf("%s", flag);
+                scanf("%s", flag); clear_stdin();
                 cmd_howmuch(datetime, flag);
             } else if (strcmp(command, "Logout") == 0) {
                 cmd_logout(system);
             } else if (strcmp(command, "Sanctions") == 0) {
                 printf("Введите имя пользователя: ");
-                scanf("%6s", username);
+                scanf("%6s", username); clear_stdin();
                 cmd_sanctions(system, username);
             } else if (strcmp(command, "Help") == 0) {
                 print_help();
