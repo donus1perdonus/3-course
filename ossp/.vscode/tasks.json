@@ -2,68 +2,6 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "build",
-            "type": "shell",
-            "command": "cmake",
-            "args": [
-                "--build",
-                "${workspaceFolder}/build",
-                "--config",
-                "Debug",
-                "--target",
-                "OSSP_Project"
-            ],
-            "group": {
-                "kind": "build",
-                "isDefault": true
-            },
-            "presentation": {
-                "echo": true,
-                "reveal": "silent",
-                "focus": false,
-                "panel": "shared"
-            },
-            "problemMatcher": [
-                "$gcc",
-                "$msCompile"
-            ]
-        },
-        {
-            "label": "cmake",
-            "type": "shell",
-            "command": "cmake",
-            "args": [
-                "-S",
-                "${workspaceFolder}",
-                "-B",
-                "${workspaceFolder}/build",
-                "-DCMAKE_BUILD_TYPE=Debug",
-                "-G",
-                "MinGW Makefiles"
-            ],
-            "group": "build",
-            "presentation": {
-                "echo": true,
-                "reveal": "silent",
-                "focus": false,
-                "panel": "shared"
-            }
-        },
-        {
-            "label": "clean",
-            "type": "shell",
-            "command": "cmake",
-            "args": [
-                "--build",
-                "${workspaceFolder}/build",
-                "--config",
-                "Debug",
-                "--target",
-                "clean"
-            ],
-            "group": "build"
-        },
-        {
             "label": "build-windows",
             "type": "shell",
             "command": "cmake",
@@ -133,70 +71,17 @@
             ]
         },
         {
-            "label": "clean-windows",
+            "label": "cmake-linux",
             "type": "shell",
             "command": "cmake",
             "args": [
-                "--build",
-                "${workspaceFolder}/build-windows",
-                "--config",
-                "Debug",
-                "--target",
-                "clean"
-            ],
-            "group": "build"
-        },
-        {
-            "label": "clean-linux",
-            "type": "shell",
-            "command": "wsl",
-            "args": [
-                "-d",
-                "docker-desktop",
-                "sh",
-                "-c",
-                "cd /mnt/host/c/Users/artio/projects/cpp/ossp && rm -rf build-linux"
-            ],
-            "group": "build",
-            "presentation": {
-                "echo": true,
-                "reveal": "silent",
-                "focus": false,
-                "panel": "shared"
-            }
-        },
-        {
-            "label": "build-alpine",
-            "type": "shell",
-            "command": "wsl",
-            "args": [
-                "-d",
-                "docker-desktop",
-                "sh",
-                "-c",
-                "cd /mnt/host/c/Users/artio/projects/cpp/ossp && rm -rf build-alpine && cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug && cmake --build build --target OSSP_Project"
-            ],
-            "group": "build",
-            "presentation": {
-                "echo": true,
-                "reveal": "always",
-                "focus": false,
-                "panel": "shared"
-            },
-            "problemMatcher": [
-                "$gcc"
-            ]
-        },
-        {
-            "label": "clean-alpine",
-            "type": "shell",
-            "command": "wsl",
-            "args": [
-                "-d",
-                "docker-desktop",
-                "sh",
-                "-c",
-                "cd /mnt/host/c/Users/artio/projects/cpp/ossp && rm -rf build"
+                "-S",
+                "${workspaceFolder}/linux",
+                "-B",
+                "${workspaceFolder}/build-linux",
+                "-DCMAKE_BUILD_TYPE=Debug",
+                "-G",
+                "MinGW Makefiles"
             ],
             "group": "build",
             "presentation": {

@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <windows.h>
 #include "task1.h"
 #include "task2.h"
 #include "task3.h"
@@ -11,12 +12,15 @@ void print_usage(const char *program_name) {
     printf("Доступные задания: 1-4 (Windows версия)\n");
     printf("Примеры:\n");
     printf("  %s 1 -f test.bin                    # Задание 1 с файлом test.bin\n", program_name);
-    printf("  %s 2                                # Задание 2\n");
-    printf("  %s 3 source.txt backup.txt          # Задание 3 - копирование файлов\n");
-    printf("  %s 4 data.bin xor8                  # Задание 4 - побайтовая обработка\n");
+    printf("  %s 2                                # Задание 2\n", program_name);
+    printf("  %s 3 source.txt backup.txt          # Задание 3 - копирование файлов\n", program_name);
+    printf("  %s 4 data.bin xor8                  # Задание 4 - побайтовая обработка\n", program_name);
 }
 
 int main(int argc, char *argv[]) {
+    SetConsoleOutputCP(CP_UTF8);
+    SetConsoleCP(CP_UTF8);
+
     if (argc < 2) {
         print_usage(argv[0]);
         return 1;
@@ -34,25 +38,15 @@ int main(int argc, char *argv[]) {
 
     switch (task_number) {
         case 1:
-            if (argc < 3) {
-                fprintf(stderr, "Ошибка: для задания 1 требуется указать флаг -f и имя файла\n");
+            if (argc < 4 || strcmp(argv[2], "-f") != 0) {
+                fprintf(stderr, "Ошибка: ожидается формат '-f <имя_файла>', получено: ");
+                for (int i = 2; i < argc; ++i) fprintf(stderr, "%s ", argv[i]);
+                fprintf(stderr, "\n");
                 printf("Использование: %s 1 -f <имя_файла>\n", argv[0]);
                 return 1;
             }
-            
-            // Парсим аргументы для задания 1
-            char *args_str = argv[2];
-            char *flag = strtok(args_str, " ");
-            char *filename = strtok(NULL, " ");
-            
-            if (flag == NULL || filename == NULL || strcmp(flag, "-f") != 0) {
-                fprintf(stderr, "Ошибка: ожидается формат '-f <имя_файла>', получено: '%s'\n", args_str);
-                printf("Использование: %s 1 -f <имя_файла>\n", argv[0]);
-                return 1;
-            }
-            
-            // Создаем новый argv для task1_main
-            char *task1_argv[] = {"task1", "-f", filename, NULL};
+            // Формируем новый argv для task1_main
+            char *task1_argv[] = {"task1", "-f", argv[3], NULL};
             task1_main(3, task1_argv);
             break;
         case 2:
