@@ -3,5 +3,6 @@
         "stdio.h": "c",
         "task1.h": "c"
     },
-    "cmake.sourceDirectory": "C:/Users/artio/projects/3-course/ossp/windows"
+    "cmake.sourceDirectory": "C:/Users/artio/projects/3-course/ossp/windows",
+    "cmake.ignoreCMakeListsMissing": true
 }

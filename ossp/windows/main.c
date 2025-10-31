@@ -67,7 +67,19 @@ int main(int argc, char *argv[]) {
                 printf("Использование: %s 3 <исходный_файл> <целевой_файл>\n", argv[0]);
                 return 1;
             }
-            char *task3_argv[] = {"task3", source_file, dest_file, NULL};
+            char absolute_src_path[_MAX_PATH];
+            char absolute_dst_path[_MAX_PATH];
+            if (_fullpath(absolute_src_path, source_file, _MAX_PATH) != NULL) {
+                printf("Абсолютный путь: %s\n", absolute_src_path);
+            } else {
+                perror("Ошибка преобразования пути");
+            }
+            if (_fullpath(absolute_dst_path, dest_file, _MAX_PATH) != NULL) {
+                printf("Абсолютный путь: %s\n", absolute_dst_path);
+            } else {
+                perror("Ошибка преобразования пути");
+            }
+            char *task3_argv[] = {"task3", absolute_src_path, absolute_dst_path, NULL};
             task3_main(3, task3_argv);
             break;
         case 4:

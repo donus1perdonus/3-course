@@ -54,10 +54,10 @@
             "command": "wsl",
             "args": [
                 "-d",
-                "docker-desktop",
+                "Ubuntu",
                 "sh",
                 "-c",
-                "cd /mnt/host/c/Users/artio/projects/cpp/ossp && rm -rf build-linux && cmake -S linux -B build-linux -DCMAKE_BUILD_TYPE=Debug && cmake --build build-linux --target OSSP_Project_Linux"
+                "rm -rf build-linux && cmake -S linux -B build-linux -DCMAKE_BUILD_TYPE=Debug && cmake --build build-linux --target OSSP_Project_Linux"
             ],
             "group": "build",
             "presentation": {
