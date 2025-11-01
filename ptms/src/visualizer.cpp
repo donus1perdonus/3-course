@@ -238,10 +238,14 @@ void Visualizer::drawStatistics() {
     stats << "\nSkew = " << rv.skewness();
     stats << "  Kurt = " << rv.kurtosis();
     stats << "\nPress SPACE to change view";
-    
-    // В реальном приложении здесь должна быть реализация вывода текста
-    // Для простоты выводим в консоль
-    std::cout << "\r" << stats.str() << std::flush;
+
+    // Обновляем заголовок окна не чаще 4 раз в секунду, чтобы не засорять консоль
+    static double lastUpdate = 0.0;
+    double now = glfwGetTime();
+    if (now - lastUpdate >= 0.25) {
+        lastUpdate = now;
+        glfwSetWindowTitle(window, stats.str().c_str());
+    }
 }
 
 std::pair<double, double> Visualizer::getValueRange() const {
