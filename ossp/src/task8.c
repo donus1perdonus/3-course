@@ -30,7 +30,7 @@ void free_file_table(FileTable *table) {
 }
 
 // Функция для добавления файла в таблицу (если его еще нет)
-int add_file_to_table(FileTable *table, const char *name, const char *path, long disk_address) {
+int add_file_to_table(FileTable *table, const char *path, long disk_address) {
     // Проверяем, есть ли уже такой файл в таблице
     for (int i = 0; i < table->count; i++) {
         if (strcmp(table->files[i].path, path) == 0) {
@@ -120,7 +120,7 @@ void traverse_directory(const char *dir_path, FileTable *table, int recmin, int 
         if (S_ISREG(st.st_mode) && current_depth >= recmin) {
             long disk_address = get_disk_address(full_path);
             if (disk_address != -1) {
-                add_file_to_table(table, entry->d_name, full_path, disk_address);
+                add_file_to_table(table, full_path, disk_address);
             }
         }
         

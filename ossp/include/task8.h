@@ -29,7 +29,7 @@ void init_file_table(FileTable *table, int initial_capacity);
 
 void free_file_table(FileTable *table);
 
-int add_file_to_table(FileTable *table, const char *name, const char *path, long disk_address);
+int add_file_to_table(FileTable *table, const char *path, long disk_address);
 
 long get_disk_address(const char *path);
 
