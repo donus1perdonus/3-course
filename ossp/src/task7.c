@@ -1,3 +1,4 @@
+#include <task7.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -5,9 +6,6 @@
 #include <sys/wait.h>
 #include <sys/types.h>
 #include <errno.h>
-
-#define MAX_PATH_LENGTH 1024
-#define MAX_LINE_LENGTH 4096
 
 // Функция для подсчета вхождений строки в файле
 int count_occurrences(const char* filename, const char* search_str) {

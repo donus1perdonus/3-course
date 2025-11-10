@@ -1,7 +1,8 @@
 #ifndef TASK7_H
 #define TASK7_H
 
-#include <stdio.h>
+#define MAX_PATH_LENGTH 1024
+#define MAX_LINE_LENGTH 4096
 
 int count_occurrences(const char* filename, const char* search_str);
 

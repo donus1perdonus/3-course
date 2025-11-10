@@ -43,7 +43,7 @@ int main(int argc, char *argv[]) {
             task7_main(argc, argv);
             break;
         case 8:
-            task8_main();
+            task8_main(argc, argv);
             break;
         default:
             fprintf(stderr, "Ошибка: неизвестный номер задания\n");
