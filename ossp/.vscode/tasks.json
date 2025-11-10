@@ -51,11 +51,8 @@
         {
             "label": "build-linux",
             "type": "shell",
-            "command": "wsl",
+            "command": "sh",
             "args": [
-                "-d",
-                "Ubuntu",
-                "sh",
                 "-c",
                 "rm -rf build-linux && cmake -S linux -B build-linux -DCMAKE_BUILD_TYPE=Debug && cmake --build build-linux --target OSSP_Project_Linux"
             ],
@@ -79,9 +76,7 @@
                 "${workspaceFolder}/linux",
                 "-B",
                 "${workspaceFolder}/build-linux",
-                "-DCMAKE_BUILD_TYPE=Debug",
-                "-G",
-                "MinGW Makefiles"
+                "-DCMAKE_BUILD_TYPE=Debug"
             ],
             "group": "build",
             "presentation": {

@@ -40,7 +40,7 @@ int main(int argc, char *argv[]) {
             task6_main();
             break;
         case 7:
-            task7_main();
+            task7_main(argc, argv);
             break;
         case 8:
             task8_main();
