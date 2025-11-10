@@ -1,0 +1,3 @@
+../../meta/t7_1.txt
+../../meta/t7_2.txt
+../../meta/t7_3.txt

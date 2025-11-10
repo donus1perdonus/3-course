@@ -4,5 +4,6 @@
         "task1.h": "c"
     },
     "cmake.sourceDirectory": "C:/Users/artio/projects/3-course/ossp/windows",
-    "cmake.ignoreCMakeListsMissing": true
+    "cmake.ignoreCMakeListsMissing": true,
+    "C_Cpp.default.compilerPath": "/usr/bin/gcc"
 }

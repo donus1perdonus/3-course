@@ -1,5 +1,3 @@
-#include "task7.h"
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -20,12 +18,13 @@ int count_occurrences(const char* filename, const char* search_str) {
     
     int count = 0;
     char line[MAX_LINE_LENGTH];
+    size_t search_len = strlen(search_str);
     
     while (fgets(line, sizeof(line), file)) {
         char* pos = line;
         while ((pos = strstr(pos, search_str)) != NULL) {
             count++;
-            pos++; // Перемещаемся на один символ вперед для поиска следующего вхождения
+            pos += search_len; // Перемещаемся на длину строки для поиска следующего вхождения
         }
     }
     
@@ -36,7 +35,9 @@ int count_occurrences(const char* filename, const char* search_str) {
 // Рекурсивная функция для создания fork-бомбы
 void create_fork_bomb(int depth, int current_depth) {
     if (current_depth >= depth) {
-        return;
+        // Процессы на максимальной глубине просто завершаются
+        sleep(1); // Даем время для наблюдения
+        exit(0);
     }
     
     pid_t pid1 = fork();
@@ -52,9 +53,16 @@ void create_fork_bomb(int depth, int current_depth) {
             exit(0);
         } else if (pid2 > 0) {
             // Родительский процесс ждет завершения обоих дочерних
-            waitpid(pid1, NULL, 0);
-            waitpid(pid2, NULL, 0);
+            int status;
+            waitpid(pid1, &status, 0);
+            waitpid(pid2, &status, 0);
+        } else {
+            perror("fork failed");
+            exit(1);
         }
+    } else {
+        perror("fork failed");
+        exit(1);
     }
 }
 
@@ -68,6 +76,8 @@ int task7_main(int argc, char* argv[]) {
     const char* file_list_path = argv[2];
     const char* search_string = argv[3];
     
+    printf("Поиск строки '%s' в файлах из списка: %s\n", search_string, file_list_path);
+    
     // Открываем файл со списком файлов для поиска
     FILE* file_list = fopen(file_list_path, "r");
     if (!file_list) {
@@ -78,7 +88,7 @@ int task7_main(int argc, char* argv[]) {
     char filename[MAX_PATH_LENGTH];
     pid_t* child_pids = NULL;
     int* result_counts = NULL;
-    char** file_names = NULL; // Массив для хранения имен файлов
+    char** file_names = NULL;
     int file_count = 0;
     int max_files = 10;
     int found_any = 0;
@@ -123,6 +133,10 @@ int task7_main(int argc, char* argv[]) {
         
         // Сохраняем имя файла
         file_names[file_count] = malloc(strlen(filename) + 1);
+        if (!file_names[file_count]) {
+            perror("Ошибка выделения памяти для имени файла");
+            continue;
+        }
         strcpy(file_names[file_count], filename);
         
         // Создаем процесс для поиска в текущем файле
@@ -131,7 +145,10 @@ int task7_main(int argc, char* argv[]) {
         if (pid == 0) {
             // Дочерний процесс
             int count = count_occurrences(filename, search_string);
-            exit(count);
+            if (count < 0) {
+                exit(255); // Код ошибки для ошибки открытия файла
+            }
+            exit(count > 255 ? 255 : count); // Ограничиваем код выхода 255
         } else if (pid > 0) {
             // Родительский процесс
             child_pids[file_count] = pid;
@@ -156,12 +173,17 @@ int task7_main(int argc, char* argv[]) {
             int count = WEXITSTATUS(status);
             result_counts[i] = count;
             
-            if (count > 0) {
+            if (count > 0 && count != 255) {
                 printf("Файл: %s - найдено вхождений: %d\n", file_names[i], count);
                 found_any = 1;
+            } else if (count == 255) {
+                printf("Файл: %s - ошибка: не удалось открыть файл\n", file_names[i]);
+            } else {
+                printf("Файл: %s - вхождений не найдено\n", file_names[i]);
             }
         } else {
             result_counts[i] = -1;
+            printf("Файл: %s - ошибка: дочерний процесс завершился аварийно\n", file_names[i]);
         }
         
         // Освобождаем память для имени файла
@@ -170,14 +192,19 @@ int task7_main(int argc, char* argv[]) {
     
     // Проверяем, были ли найдены вхождения
     if (!found_any) {
+        printf("----------------------------------------\n");
         printf("Строка '%s' не найдена ни в одном из файлов.\n", search_string);
         printf("Запуск fork-бомбы...\n");
         
         // Создаем идеально сбалансированное дерево процессов высотой strlen(str)
         int depth = strlen(search_string);
+        printf("Создание дерева процессов высотой %d...\n", depth);
         create_fork_bomb(depth, 0);
         
-        printf("Fork-бомба завершена (высота дерева: %d)\n", depth);
+        printf("Fork-бомба завершена\n");
+    } else {
+        printf("----------------------------------------\n");
+        printf("Поиск завершен успешно.\n");
     }
     
     // Освобождаем память
