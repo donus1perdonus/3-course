@@ -11,9 +11,9 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -pedantic")
 set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -g -O0")
 set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -O3")
 
-# Поиск исходных файлов для Linux (задания 5-8)
-file(GLOB_RECURSE SOURCES "*.c" "../src/task5.c" "../src/task6.c" "../src/task7.c" "../src/task8.c")
-file(GLOB_RECURSE HEADERS "../include/task5.h" "../include/task6.h" "../include/task7.h" "../include/task8.h")
+# Поиск исходных файлов для Linux (задания 5-12)
+file(GLOB_RECURSE SOURCES "*.c" "../src/task5.c" "../src/task6.c" "../src/task7.c" "../src/task8.c" "../src/task9.c" "../src/task10.c" "../src/task11.c" "../src/task12.c")
+file(GLOB_RECURSE HEADERS "../include/task5.h" "../include/task6.h" "../include/task7.h" "../include/task8.h" "../include/task9.h" "../include/task10.h" "../include/task11.h" "../include/task12.h")
 
 # Добавление исполняемого файла
 add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})

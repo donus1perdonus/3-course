@@ -5,15 +5,23 @@
 #include "task6.h"
 #include "task7.h"
 #include "task8.h"
+#include "task9.h"
+#include "task10.h"
+#include "task11.h"
+#include "task12.h"
 
 void print_usage(const char *program_name) {
     printf("Использование: %s <номер_задания> [аргументы]\n", program_name);
     printf("Доступные задания: 5-8 (Linux версия)\n");
     printf("Примеры:\n");
     printf("  %s 5                                # Задание 5\n", program_name);
-    printf("  %s 6                                # Задание 6\n");
-    printf("  %s 7                                # Задание 7\n");
-    printf("  %s 8                                # Задание 8\n");
+    printf("  %s 6                                # Задание 6\n", program_name);
+    printf("  %s 7                                # Задание 7\n", program_name);
+    printf("  %s 8                                # Задание 8\n", program_name);
+    printf("  %s 9                                # Задание 9\n", program_name);
+    printf("  %s 10                               # Задание 10\n", program_name);
+    printf("  %s 11                               # Задание 11\n", program_name);
+    printf("  %s 12                               # Задание 12\n", program_name);
 }
 
 int main(int argc, char *argv[]) {
@@ -44,6 +52,18 @@ int main(int argc, char *argv[]) {
             break;
         case 8:
             task8_main(argc, argv);
+            break;
+        case 9:
+            task9_main(argc, argv);
+            break;
+        case 10:
+            task10_main(argc, argv);
+            break;
+        case 11:
+            task11_main(argc, argv);
+            break;
+        case 12:
+            task12_main(argc, argv);
             break;
         default:
             fprintf(stderr, "Ошибка: неизвестный номер задания\n");
