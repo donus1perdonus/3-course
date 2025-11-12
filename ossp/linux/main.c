@@ -12,7 +12,7 @@
 
 void print_usage(const char *program_name) {
     printf("Использование: %s <номер_задания> [аргументы]\n", program_name);
-    printf("Доступные задания: 5-8 (Linux версия)\n");
+    printf("Доступные задания: 5-12 (Linux версия)\n");
     printf("Примеры:\n");
     printf("  %s 5                                # Задание 5\n", program_name);
     printf("  %s 6                                # Задание 6\n", program_name);
@@ -32,8 +32,8 @@ int main(int argc, char *argv[]) {
 
     int task_number = atoi(argv[1]);
     
-    if (task_number < 5 || task_number > 8) {
-        fprintf(stderr, "Ошибка: номер задания должен быть от 5 до 8 (Linux версия)\n");
+    if (task_number < 5 || task_number > 12) {
+        fprintf(stderr, "Ошибка: номер задания должен быть от 5 до 12 (Linux версия)\n");
         print_usage(argv[0]);
         return 1;
     }
@@ -54,7 +54,7 @@ int main(int argc, char *argv[]) {
             task8_main(argc, argv);
             break;
         case 9:
-            task9_main(argc, argv);
+            task9_main();
             break;
         case 10:
             task10_main(argc, argv);
