@@ -3,6 +3,7 @@
 #include <cmath>
 #include <cstdlib>
 #include <ctime>
+#include <windows.h>
 #include "openmp.h"
 #include "opencl.h"
 #include "utils.h"
@@ -160,6 +161,9 @@ void runTask2(const std::vector<std::string>& flags)
 
 int main(int argc, char** argv) 
 {
+    SetConsoleOutputCP(CP_UTF8);
+    SetConsoleCP(CP_UTF8);
+
     CommandLineArgs args = parseCommandLineArgs(argc, argv);
     
     if (args.flags.empty() && argc == 1) {
