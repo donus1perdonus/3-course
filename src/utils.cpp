@@ -45,6 +45,7 @@ void printHelp()
     std::cout << "  1 - Перемножение матриц с OpenMP" << std::endl;
     std::cout << "  2 - Вычисление числа π с заданной точностью" << std::endl;
     std::cout << "  3 - Работа с GPU (OpenCL)" << std::endl;
+    std::cout << "  4 - Использование OpenMP sections" << std::endl;
     std::cout << std::endl;
     std::cout << "Флаги для задания 1:" << std::endl;
     std::cout << "  <размер_матрицы> - размер матрицы (по умолчанию 1000)" << std::endl;
@@ -59,10 +60,18 @@ void printHelp()
     std::cout << "  3.1 - Вывести информацию о подключённых GPU устройствах" << std::endl;
     std::cout << "  3.2 <размер> - Умножение матриц на GPU (по умолчанию размер 1000)" << std::endl;
     std::cout << std::endl;
+    std::cout << "Флаги для задания 4:" << std::endl;
+    std::cout << "  <n> - значение n для всех подзаданий (по умолчанию 10)" << std::endl;
+    std::cout << "  4.1 - Разложить число n на сумму квадратов" << std::endl;
+    std::cout << "  4.2 - Нахождение n чисел Фибоначчи" << std::endl;
+    std::cout << "  4.3 - Нахождение n-го простого числа" << std::endl;
+    std::cout << "  4.4 - Вывести сумму всех делителей числа n" << std::endl;
+    std::cout << std::endl;
     std::cout << "Примеры:" << std::endl;
     std::cout << "  DAA.exe 1 2000" << std::endl;
     std::cout << "  DAA.exe 2 0.001 8 --integration" << std::endl;
     std::cout << "  DAA.exe 2 0.00001 16 --monte-carlo" << std::endl;
     std::cout << "  DAA.exe 3 3.1                 # Информация о GPU" << std::endl;
     std::cout << "  DAA.exe 3 3.2 2000            # Умножение матриц на GPU" << std::endl;
+    std::cout << "  DAA.exe 4 25                  # Задание 4 с n=25" << std::endl;
 }

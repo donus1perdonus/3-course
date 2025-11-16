@@ -51,4 +51,29 @@ public:
     double calculatePiIntegration();
 };
 
+// Класс для задания 4: использование OpenMP sections
+class Task4Calculator 
+{
+private:
+    int n;
+
+public:
+    Task4Calculator(int n);
+    
+    // 4.1: Разложить число n на сумму квадратов
+    std::vector<int> decomposeIntoSquares(int num);
+    
+    // 4.2: Нахождение n чисел Фибоначчи
+    std::vector<long long> findNFibonacciNumbers(int count);
+    
+    // 4.3: Нахождение n-го простого числа
+    long long findNthPrime(int nth);
+    
+    // 4.4: Вывести сумму всех делителей числа n
+    long long sumOfDivisors(int num);
+    
+    // Выполнить все 4 подзадания параллельно с помощью sections
+    void runAllTasks(int n_value);
+};
+
 #endif // OPENMP_MATRIX_MULTIPLIER_H

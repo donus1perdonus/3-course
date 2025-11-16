@@ -106,6 +106,27 @@ void runTask3(const std::vector<std::string>& flags)
     }
 }
 
+void runTask4(const std::vector<std::string>& flags)
+{
+    int n = 10; // Значение по умолчанию
+    
+    // Парсим флаги
+    if (!flags.empty()) {
+        try {
+            n = std::max(1, std::stoi(flags[0]));
+        } catch (...) {
+            std::cerr << "Ошибка: неверное значение n. Используется значение по умолчанию (10)." << std::endl;
+        }
+    }
+    
+    std::cout << "Задание 4: Использование OpenMP sections" << std::endl;
+    std::cout << "===========================================" << std::endl;
+    std::cout << "Выполнение подзаданий 4.1-4.4 параллельно для n = " << n << std::endl;
+    
+    Task4Calculator calculator(n);
+    calculator.runAllTasks(n);
+}
+
 void runTask2(const std::vector<std::string>& flags) 
 {
     double precision = 0.0001;
@@ -180,6 +201,9 @@ int main(int argc, char** argv)
             break;
         case 3:
             runTask3(args.flags);
+            break;
+        case 4:
+            runTask4(args.flags);
             break;
         default:
             std::cerr << "Ошибка: неизвестный номер задания " << args.task_number << std::endl;
