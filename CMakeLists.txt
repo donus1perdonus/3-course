@@ -21,6 +21,8 @@ add_executable(${PROJECT_NAME}
     src/main.cpp
     src/random_variable.cpp
     src/visualizer.cpp
+    src/random_walk.cpp
+    src/random_walk_visualizer.cpp
 )
 
 # Линковка для Windows (MinGW)
@@ -29,6 +31,7 @@ if(WIN32)
         ${CMAKE_SOURCE_DIR}/libs/glfw/lib/libglfw3.a
         opengl32
         gdi32
+        comdlg32
     )
 else()
     # Для Linux

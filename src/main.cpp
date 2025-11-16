@@ -1,10 +1,13 @@
 #include "visualizer.h"
 #include "random_variable.h"
+#include "random_walk_visualizer.h"
 #include <iostream>
 #include <limits>
 #include <windows.h>
+#include <commdlg.h>
 #include <set>
 #include <fstream>
+#include <string>
 
 namespace {
 	std::vector<std::pair<double, double>> readDistributionFromStdin() {
@@ -195,6 +198,144 @@ namespace {
 
 		std::cout << "\n=== Задание 1.2 завершено ===\n";
 	}
+
+	std::string openFileDialog() {
+		OPENFILENAMEA ofn;
+		char szFile[260] = { 0 };
+		
+		ZeroMemory(&ofn, sizeof(ofn));
+		ofn.lStructSize = sizeof(ofn);
+		ofn.lpstrFile = szFile;
+		ofn.nMaxFile = sizeof(szFile);
+		ofn.lpstrFilter = "Binary Files\0*.bin\0All Files\0*.*\0";
+		ofn.nFilterIndex = 1;
+		ofn.lpstrFileTitle = NULL;
+		ofn.nMaxFileTitle = 0;
+		ofn.lpstrInitialDir = NULL;
+		ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
+		
+		if (GetOpenFileNameA(&ofn) == TRUE) {
+			return std::string(szFile);
+		}
+		return "";
+	}
+
+	void demonstrateTask2() {
+		std::cout << "=== Задание 2: Моделирование случайного блуждания ===\n\n";
+
+		RandomWalkVisualizer visualizer;
+
+		// Инициализация окна
+		if (!visualizer.initialize(1000, 600, "Random Walk Simulator")) {
+			std::cerr << "Ошибка инициализации визуализатора\n";
+			return;
+		}
+
+		// Устанавливаем указатель на визуализатор для callback'ов
+		glfwSetWindowUserPointer(visualizer.getWindow(), &visualizer);
+
+		// Параметры по умолчанию
+		double initialPosition = 0.0;
+		int numberOfSteps = 10;
+		DiscreteRandomVariable stepDistribution;
+
+		// Выбор источника распределения
+		std::cout << "Выберите способ задания закона перемещения:\n";
+		std::cout << "1 - Использовать распределение по умолчанию\n";
+		std::cout << "2 - Загрузить из файла (десериализация)\n";
+		std::cout << "3 - Ввести с клавиатуры\n";
+		std::cout << "Ваш выбор: ";
+
+		int choice;
+		std::cin >> choice;
+
+		if (choice == 2) {
+			// Загрузка из файла
+			std::cout << "\nОткрывается диалог выбора файла...\n";
+			std::string filename = openFileDialog();
+			if (!filename.empty()) {
+				visualizer.loadStepDistributionFromFile(filename);
+			} else {
+				std::cout << "Файл не выбран, используется распределение по умолчанию.\n";
+				std::vector<std::pair<double, double>> defaultDist = {
+					{-1.0, 0.25}, {0.0, 0.5}, {1.0, 0.25}
+				};
+				stepDistribution.setDistribution(defaultDist);
+				visualizer.setStepDistribution(stepDistribution);
+			}
+		} else if (choice == 3) {
+			// Ввод с клавиатуры
+			try {
+				auto dist = readDistributionFromStdin();
+				stepDistribution.setDistribution(dist);
+				visualizer.setStepDistribution(stepDistribution);
+			} catch (const std::exception& ex) {
+				std::cerr << "Ошибка ввода распределения: " << ex.what() << "\n";
+				std::cout << "Используется распределение по умолчанию.\n";
+				std::vector<std::pair<double, double>> defaultDist = {
+					{-1.0, 0.25}, {0.0, 0.5}, {1.0, 0.25}
+				};
+				stepDistribution.setDistribution(defaultDist);
+				visualizer.setStepDistribution(stepDistribution);
+			}
+		} else {
+			// По умолчанию
+			std::vector<std::pair<double, double>> defaultDist = {
+				{-1.0, 0.25}, {0.0, 0.5}, {1.0, 0.25}
+			};
+			stepDistribution.setDistribution(defaultDist);
+			visualizer.setStepDistribution(stepDistribution);
+			std::cout << "Используется распределение по умолчанию: {-1:0.25, 0:0.5, 1:0.25}\n";
+		}
+
+		// Ввод начальной позиции
+		std::cout << "\nВведите начальное положение точки (по умолчанию 0.0): ";
+		std::string input;
+		std::cin.ignore();
+		std::getline(std::cin, input);
+		if (!input.empty()) {
+			try {
+				initialPosition = std::stod(input);
+			} catch (...) {
+				initialPosition = 0.0;
+			}
+		}
+		visualizer.setInitialPosition(initialPosition);
+
+		// Ввод количества шагов
+		std::cout << "Введите количество шагов (по умолчанию 10): ";
+		std::getline(std::cin, input);
+		if (!input.empty()) {
+			try {
+				numberOfSteps = std::stoi(input);
+				if (numberOfSteps <= 0) numberOfSteps = 10;
+			} catch (...) {
+				numberOfSteps = 10;
+			}
+		}
+		visualizer.setNumberOfSteps(numberOfSteps);
+
+		std::cout << "\n=== Управление ===\n";
+		std::cout << "SPACE - Запуск/Пауза\n";
+		std::cout << "R - Сброс\n";
+		std::cout << "S - Остановка\n";
+		std::cout << "D - Показать/скрыть распределение конечных позиций\n";
+		std::cout << "ESC - Выход\n\n";
+
+		visualizer.run();
+
+		// Вывод результата после завершения
+		std::cout << "\n=== Результат моделирования ===\n";
+		std::cout << "Распределение вероятностей попадания точки во все конечные позиции:\n";
+		auto& walk = visualizer.getWalk();
+		if (walk.isCompleted()) {
+			std::cout << walk.getFinalPositionDistributionString() << "\n";
+		} else {
+			std::cout << "Моделирование не завершено.\n";
+		}
+
+		std::cout << "\n=== Задание 2 завершено ===\n";
+	}
 }
 
 int main(int argc, char** argv) {
@@ -207,6 +348,7 @@ int main(int argc, char** argv) {
 		std::cerr << "Примеры:\n";
 		std::cerr << "  " << argv[0] << " 1.1  - Демонстрация функционала DiscreteRandomVariable\n";
 		std::cerr << "  " << argv[0] << " 1.2  - Визуализация ДСВ через OpenGL\n";
+		std::cerr << "  " << argv[0] << " 2    - Моделирование случайного блуждания\n";
 		return -1;
 	}
 
@@ -216,9 +358,11 @@ int main(int argc, char** argv) {
 		demonstrateTask1_1();
 	} else if (taskNumber == "1.2") {
 		demonstrateTask1_2();
+	} else if (taskNumber == "2") {
+		demonstrateTask2();
 	} else {
 		std::cerr << "Неизвестный номер задания: " << taskNumber << "\n";
-		std::cerr << "Доступные задания: 1.1, 1.2\n";
+		std::cerr << "Доступные задания: 1.1, 1.2, 2\n";
 		return -1;
 	}
 
