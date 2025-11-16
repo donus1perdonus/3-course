@@ -48,6 +48,8 @@ public:
     
     // Информация
     std::string toString() const;
+    std::string toPolylineString() const;
+    std::string toCDFString() const;
 };
 
 #endif

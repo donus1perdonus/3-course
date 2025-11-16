@@ -221,3 +221,31 @@ std::string DiscreteRandomVariable::toString() const {
     result += "Kurtosis: " + std::to_string(kurtosis()) + "\n";
     return result;
 }
+
+std::string DiscreteRandomVariable::toPolylineString() const {
+    std::string result = "Polyline representation:\n";
+    std::vector<std::pair<double, double>> sorted = distribution;
+    std::sort(sorted.begin(), sorted.end(), 
+        [](const auto& a, const auto& b) { return a.first < b.first; });
+    
+    result += "Points: ";
+    for (size_t i = 0; i < sorted.size(); ++i) {
+        result += "(" + std::to_string(sorted[i].first) + ", " + 
+                 std::to_string(sorted[i].second) + ")";
+        if (i < sorted.size() - 1) {
+            result += " -> ";
+        }
+    }
+    result += "\n";
+    return result;
+}
+
+std::string DiscreteRandomVariable::toCDFString() const {
+    std::string result = "Cumulative Distribution Function:\n";
+    auto cdf = getCDF();
+    for (const auto& pair : cdf) {
+        result += "  F(" + std::to_string(pair.first) + ") = " + 
+                 std::to_string(pair.second) + "\n";
+    }
+    return result;
+}
