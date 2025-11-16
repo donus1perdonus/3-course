@@ -18,7 +18,7 @@ include_directories(
 
 # Создаем исполняемый файл
 add_executable(${PROJECT_NAME}
-    src/main.cpp
+    main.cpp
     src/random_variable.cpp
     src/visualizer.cpp
     src/random_walk.cpp
