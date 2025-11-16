@@ -12,7 +12,6 @@
 │   ├── random_walk.h
 │   └── random_walk_visualizer.h
 ├── src/                  # Исходные файлы
-│   ├── main.cpp
 │   ├── random_variable.cpp
 │   ├── visualizer.cpp
 │   ├── random_walk.cpp
@@ -21,6 +20,7 @@
 │   └── glfw/            # GLFW для OpenGL
 ├── build/                # Директория сборки
 ├── meta/                 # Методические материалы
+├── main.cpp              # Точка входа
 └── CMakeLists.txt        # Файл конфигурации CMake
 ```
 
