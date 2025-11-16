@@ -28,6 +28,7 @@ private:
 
     std::vector<DeviceInfo> devices;
     bool initialized;
+    bool use_double_precision;  // true для double, false для float
     
     // OpenCL объекты
     void* context;

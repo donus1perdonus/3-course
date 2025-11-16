@@ -3,6 +3,7 @@
 #include <chrono>
 #include <cstring>
 #include <cmath>
+#include <string>
 
 #ifdef ENABLE_OPENCL
 
@@ -73,8 +74,9 @@ static const char* opencl_error_string(cl_int error) {
     }
 }
 
-// OpenCL Kernel для умножения матриц
-const char* matrix_multiply_kernel = R"(
+// OpenCL Kernel для умножения матриц (double precision)
+const char* matrix_multiply_kernel_double = R"(
+#pragma OPENCL EXTENSION cl_khr_fp64 : enable
 __kernel void matrix_multiply(__global double* A,
                                __global double* B,
                                __global double* C,
@@ -85,6 +87,26 @@ __kernel void matrix_multiply(__global double* A,
     
     if (i < N && j < N) {
         double sum = 0.0;
+        for (int k = 0; k < N; k++) {
+            sum += A[i * N + k] * B[k * N + j];
+        }
+        C[i * N + j] = sum;
+    }
+}
+)";
+
+// OpenCL Kernel для умножения матриц (float precision)
+const char* matrix_multiply_kernel_float = R"(
+__kernel void matrix_multiply(__global float* A,
+                               __global float* B,
+                               __global float* C,
+                               int N)
+{
+    int i = get_global_id(0);
+    int j = get_global_id(1);
+    
+    if (i < N && j < N) {
+        float sum = 0.0f;
         for (int k = 0; k < N; k++) {
             sum += A[i * N + k] * B[k * N + j];
         }
@@ -168,7 +190,7 @@ void printGPUInfo()
 }
 
 OpenCLMatrixMultiplier::OpenCLMatrixMultiplier() 
-    : initialized(false), context(nullptr), queue(nullptr), program(nullptr), kernel(nullptr)
+    : initialized(false), use_double_precision(true), context(nullptr), queue(nullptr), program(nullptr), kernel(nullptr)
 {
 }
 
@@ -205,24 +227,75 @@ bool OpenCLMatrixMultiplier::initialize()
         return false;
     }
     
-    // Создаём очередь команд
-    queue = clCreateCommandQueue((cl_context)context, device, 0, &err);
+    // Создаём очередь команд (используем новый API для OpenCL 2.0+)
+    cl_queue_properties props[] = {CL_QUEUE_PROPERTIES, 0, 0};
+    queue = clCreateCommandQueueWithProperties((cl_context)context, device, props, &err);
     if (!queue || err != CL_SUCCESS) {
-        std::cerr << "Ошибка создания очереди команд: " << opencl_error_string(err) << std::endl;
-        clReleaseContext((cl_context)context);
+        // Fallback на старый API для совместимости с OpenCL 1.x
+        #ifdef __GNUC__
+        #pragma GCC diagnostic push
+        #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+        #endif
+        queue = clCreateCommandQueue((cl_context)context, device, 0, &err);
+        #ifdef __GNUC__
+        #pragma GCC diagnostic pop
+        #endif
+        if (!queue || err != CL_SUCCESS) {
+            std::cerr << "Ошибка создания очереди команд: " << opencl_error_string(err) << std::endl;
+            clReleaseContext((cl_context)context);
+            return false;
+        }
+    }
+    
+    // Проверяем поддержку расширения cl_khr_fp64 для double precision
+    size_t extension_size;
+    err = clGetDeviceInfo(device, CL_DEVICE_EXTENSIONS, 0, NULL, &extension_size);
+    if (err != CL_SUCCESS) {
+        std::cerr << "Ошибка получения информации о расширениях: " << opencl_error_string(err) << std::endl;
+        cleanup();
         return false;
     }
     
+    char* extensions = new char[extension_size];
+    err = clGetDeviceInfo(device, CL_DEVICE_EXTENSIONS, extension_size, extensions, NULL);
+    if (err != CL_SUCCESS) {
+        std::cerr << "Ошибка получения расширений: " << opencl_error_string(err) << std::endl;
+        delete[] extensions;
+        cleanup();
+        return false;
+    }
+    
+    // Проверяем наличие поддержки double precision
+    bool supports_double = (strstr(extensions, "cl_khr_fp64") != NULL);
+    delete[] extensions;
+    
+    // Выбираем kernel и опции компиляции в зависимости от поддержки double precision
+    const char* kernel_source;
+    std::string build_options = "";
+    
+    if (supports_double) {
+        use_double_precision = true;
+        kernel_source = matrix_multiply_kernel_double;
+        build_options = "-cl-fp64";
+        std::cout << "Используется double precision" << std::endl;
+    } else {
+        use_double_precision = false;
+        kernel_source = matrix_multiply_kernel_float;
+        std::cout << "Предупреждение: устройство не поддерживает double precision (cl_khr_fp64)" << std::endl;
+        std::cout << "Используется float precision вместо double" << std::endl;
+    }
+    
     // Создаём программу
-    program = clCreateProgramWithSource((cl_context)context, 1, &matrix_multiply_kernel, NULL, &err);
+    program = clCreateProgramWithSource((cl_context)context, 1, &kernel_source, NULL, &err);
     if (!program || err != CL_SUCCESS) {
         std::cerr << "Ошибка создания программы: " << opencl_error_string(err) << std::endl;
         cleanup();
         return false;
     }
     
-    // Компилируем программу
-    err = clBuildProgram((cl_program)program, 0, NULL, NULL, NULL, NULL);
+    // Компилируем программу с опциями
+    const char* build_opts = build_options.empty() ? NULL : build_options.c_str();
+    err = clBuildProgram((cl_program)program, 0, NULL, build_opts, NULL, NULL);
     if (err != CL_SUCCESS) {
         size_t log_size;
         clGetProgramBuildInfo((cl_program)program, device, CL_PROGRAM_BUILD_LOG, 0, NULL, &log_size);
@@ -257,77 +330,151 @@ void OpenCLMatrixMultiplier::multiplyGPU(const std::vector<std::vector<double>>&
         return;
     }
     
-    // Подготовка массивов для передачи на GPU
-    std::vector<double> A_flat(size * size);
-    std::vector<double> B_flat(size * size);
-    std::vector<double> C_flat(size * size);
-    
-    for (int i = 0; i < size; i++) {
-        for (int j = 0; j < size; j++) {
-            A_flat[i * size + j] = A[i][j];
-            B_flat[i * size + j] = B[i][j];
-            C_flat[i * size + j] = 0.0;
-        }
-    }
-    
     cl_int err;
     
-    // Создаём буферы памяти на GPU
-    cl_mem bufA = clCreateBuffer((cl_context)context, CL_MEM_READ_ONLY, sizeof(double) * size * size, NULL, &err);
-    cl_mem bufB = clCreateBuffer((cl_context)context, CL_MEM_READ_ONLY, sizeof(double) * size * size, NULL, &err);
-    cl_mem bufC = clCreateBuffer((cl_context)context, CL_MEM_WRITE_ONLY, sizeof(double) * size * size, NULL, &err);
-    
-    // Копируем данные на GPU
-    err = clEnqueueWriteBuffer((cl_command_queue)queue, bufA, CL_TRUE, 0, sizeof(double) * size * size, A_flat.data(), 0, NULL, NULL);
-    err |= clEnqueueWriteBuffer((cl_command_queue)queue, bufB, CL_TRUE, 0, sizeof(double) * size * size, B_flat.data(), 0, NULL, NULL);
-    
-    if (err != CL_SUCCESS) {
-        std::cerr << "Ошибка копирования данных на GPU: " << opencl_error_string(err) << std::endl;
-        clReleaseMemObject(bufA);
-        clReleaseMemObject(bufB);
-        clReleaseMemObject(bufC);
-        return;
-    }
-    
-    // Устанавливаем аргументы для kernel
-    clSetKernelArg((cl_kernel)kernel, 0, sizeof(cl_mem), &bufA);
-    clSetKernelArg((cl_kernel)kernel, 1, sizeof(cl_mem), &bufB);
-    clSetKernelArg((cl_kernel)kernel, 2, sizeof(cl_mem), &bufC);
-    clSetKernelArg((cl_kernel)kernel, 3, sizeof(int), &size);
-    
-    // Запускаем kernel
-    size_t global_size[2] = {(size_t)size, (size_t)size};
-    err = clEnqueueNDRangeKernel((cl_command_queue)queue, (cl_kernel)kernel, 2, NULL, global_size, NULL, 0, NULL, NULL);
-    
-    if (err != CL_SUCCESS) {
-        std::cerr << "Ошибка запуска kernel: " << opencl_error_string(err) << std::endl;
-        clReleaseMemObject(bufA);
-        clReleaseMemObject(bufB);
-        clReleaseMemObject(bufC);
-        return;
-    }
-    
-    // Ожидаем завершения выполнения
-    clFinish((cl_command_queue)queue);
-    
-    // Копируем результат обратно
-    err = clEnqueueReadBuffer((cl_command_queue)queue, bufC, CL_TRUE, 0, sizeof(double) * size * size, C_flat.data(), 0, NULL, NULL);
-    
-    if (err != CL_SUCCESS) {
-        std::cerr << "Ошибка копирования результата с GPU: " << opencl_error_string(err) << std::endl;
-    }
-    
-    // Преобразуем обратно в двумерный массив
-    for (int i = 0; i < size; i++) {
-        for (int j = 0; j < size; j++) {
-            C[i][j] = C_flat[i * size + j];
+    if (use_double_precision) {
+        // Используем double precision
+        // Подготовка массивов для передачи на GPU
+        std::vector<double> A_flat(size * size);
+        std::vector<double> B_flat(size * size);
+        std::vector<double> C_flat(size * size);
+        
+        for (int i = 0; i < size; i++) {
+            for (int j = 0; j < size; j++) {
+                A_flat[i * size + j] = A[i][j];
+                B_flat[i * size + j] = B[i][j];
+                C_flat[i * size + j] = 0.0;
+            }
         }
+        
+        // Создаём буферы памяти на GPU
+        cl_mem bufA = clCreateBuffer((cl_context)context, CL_MEM_READ_ONLY, sizeof(double) * size * size, NULL, &err);
+        cl_mem bufB = clCreateBuffer((cl_context)context, CL_MEM_READ_ONLY, sizeof(double) * size * size, NULL, &err);
+        cl_mem bufC = clCreateBuffer((cl_context)context, CL_MEM_WRITE_ONLY, sizeof(double) * size * size, NULL, &err);
+        
+        // Копируем данные на GPU
+        err = clEnqueueWriteBuffer((cl_command_queue)queue, bufA, CL_TRUE, 0, sizeof(double) * size * size, A_flat.data(), 0, NULL, NULL);
+        err |= clEnqueueWriteBuffer((cl_command_queue)queue, bufB, CL_TRUE, 0, sizeof(double) * size * size, B_flat.data(), 0, NULL, NULL);
+        
+        if (err != CL_SUCCESS) {
+            std::cerr << "Ошибка копирования данных на GPU: " << opencl_error_string(err) << std::endl;
+            clReleaseMemObject(bufA);
+            clReleaseMemObject(bufB);
+            clReleaseMemObject(bufC);
+            return;
+        }
+        
+        // Устанавливаем аргументы для kernel
+        clSetKernelArg((cl_kernel)kernel, 0, sizeof(cl_mem), &bufA);
+        clSetKernelArg((cl_kernel)kernel, 1, sizeof(cl_mem), &bufB);
+        clSetKernelArg((cl_kernel)kernel, 2, sizeof(cl_mem), &bufC);
+        clSetKernelArg((cl_kernel)kernel, 3, sizeof(int), &size);
+        
+        // Запускаем kernel
+        size_t global_size[2] = {(size_t)size, (size_t)size};
+        err = clEnqueueNDRangeKernel((cl_command_queue)queue, (cl_kernel)kernel, 2, NULL, global_size, NULL, 0, NULL, NULL);
+        
+        if (err != CL_SUCCESS) {
+            std::cerr << "Ошибка запуска kernel: " << opencl_error_string(err) << std::endl;
+            clReleaseMemObject(bufA);
+            clReleaseMemObject(bufB);
+            clReleaseMemObject(bufC);
+            return;
+        }
+        
+        // Ожидаем завершения выполнения
+        clFinish((cl_command_queue)queue);
+        
+        // Копируем результат обратно
+        err = clEnqueueReadBuffer((cl_command_queue)queue, bufC, CL_TRUE, 0, sizeof(double) * size * size, C_flat.data(), 0, NULL, NULL);
+        
+        if (err != CL_SUCCESS) {
+            std::cerr << "Ошибка копирования результата с GPU: " << opencl_error_string(err) << std::endl;
+        }
+        
+        // Преобразуем обратно в двумерный массив
+        for (int i = 0; i < size; i++) {
+            for (int j = 0; j < size; j++) {
+                C[i][j] = C_flat[i * size + j];
+            }
+        }
+        
+        // Освобождаем память
+        clReleaseMemObject(bufA);
+        clReleaseMemObject(bufB);
+        clReleaseMemObject(bufC);
+    } else {
+        // Используем float precision (конвертируем double -> float -> double)
+        // Подготовка массивов для передачи на GPU (float)
+        std::vector<float> A_flat(size * size);
+        std::vector<float> B_flat(size * size);
+        std::vector<float> C_flat(size * size);
+        
+        for (int i = 0; i < size; i++) {
+            for (int j = 0; j < size; j++) {
+                A_flat[i * size + j] = (float)A[i][j];
+                B_flat[i * size + j] = (float)B[i][j];
+                C_flat[i * size + j] = 0.0f;
+            }
+        }
+        
+        // Создаём буферы памяти на GPU
+        cl_mem bufA = clCreateBuffer((cl_context)context, CL_MEM_READ_ONLY, sizeof(float) * size * size, NULL, &err);
+        cl_mem bufB = clCreateBuffer((cl_context)context, CL_MEM_READ_ONLY, sizeof(float) * size * size, NULL, &err);
+        cl_mem bufC = clCreateBuffer((cl_context)context, CL_MEM_WRITE_ONLY, sizeof(float) * size * size, NULL, &err);
+        
+        // Копируем данные на GPU
+        err = clEnqueueWriteBuffer((cl_command_queue)queue, bufA, CL_TRUE, 0, sizeof(float) * size * size, A_flat.data(), 0, NULL, NULL);
+        err |= clEnqueueWriteBuffer((cl_command_queue)queue, bufB, CL_TRUE, 0, sizeof(float) * size * size, B_flat.data(), 0, NULL, NULL);
+        
+        if (err != CL_SUCCESS) {
+            std::cerr << "Ошибка копирования данных на GPU: " << opencl_error_string(err) << std::endl;
+            clReleaseMemObject(bufA);
+            clReleaseMemObject(bufB);
+            clReleaseMemObject(bufC);
+            return;
+        }
+        
+        // Устанавливаем аргументы для kernel
+        clSetKernelArg((cl_kernel)kernel, 0, sizeof(cl_mem), &bufA);
+        clSetKernelArg((cl_kernel)kernel, 1, sizeof(cl_mem), &bufB);
+        clSetKernelArg((cl_kernel)kernel, 2, sizeof(cl_mem), &bufC);
+        clSetKernelArg((cl_kernel)kernel, 3, sizeof(int), &size);
+        
+        // Запускаем kernel
+        size_t global_size[2] = {(size_t)size, (size_t)size};
+        err = clEnqueueNDRangeKernel((cl_command_queue)queue, (cl_kernel)kernel, 2, NULL, global_size, NULL, 0, NULL, NULL);
+        
+        if (err != CL_SUCCESS) {
+            std::cerr << "Ошибка запуска kernel: " << opencl_error_string(err) << std::endl;
+            clReleaseMemObject(bufA);
+            clReleaseMemObject(bufB);
+            clReleaseMemObject(bufC);
+            return;
+        }
+        
+        // Ожидаем завершения выполнения
+        clFinish((cl_command_queue)queue);
+        
+        // Копируем результат обратно
+        err = clEnqueueReadBuffer((cl_command_queue)queue, bufC, CL_TRUE, 0, sizeof(float) * size * size, C_flat.data(), 0, NULL, NULL);
+        
+        if (err != CL_SUCCESS) {
+            std::cerr << "Ошибка копирования результата с GPU: " << opencl_error_string(err) << std::endl;
+        }
+        
+        // Преобразуем обратно в двумерный массив (float -> double)
+        for (int i = 0; i < size; i++) {
+            for (int j = 0; j < size; j++) {
+                C[i][j] = (double)C_flat[i * size + j];
+            }
+        }
+        
+        // Освобождаем память
+        clReleaseMemObject(bufA);
+        clReleaseMemObject(bufB);
+        clReleaseMemObject(bufC);
     }
-    
-    // Освобождаем память
-    clReleaseMemObject(bufA);
-    clReleaseMemObject(bufB);
-    clReleaseMemObject(bufC);
 }
 
 void OpenCLMatrixMultiplier::cleanup()
