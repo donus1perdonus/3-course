@@ -1,1 +1,1 @@
-# go to branches
+# Machine Learning Minor
