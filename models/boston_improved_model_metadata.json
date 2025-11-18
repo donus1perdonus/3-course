@@ -1,0 +1,12 @@
+{
+  "model_name": "Улучшенная модель Boston Housing",
+  "description": "Дополнительные слои, Dropout, L2-регуляризация, Adam и EarlyStopping",
+  "test_metrics": {
+    "loss": 16.503557205200195,
+    "mae": 2.888370990753174
+  },
+  "epochs": 200,
+  "k_folds": 4,
+  "cv_mean_mae": 2.314355492591858,
+  "cv_std_mae": 0.21628194354355107
+}
