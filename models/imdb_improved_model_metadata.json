@@ -1,0 +1,11 @@
+{
+  "model_name": "Улучшенная модель IMDB",
+  "description": "Дополнительные слои, Dropout, L2, Adam и EarlyStopping",
+  "test_metrics": {
+    "loss": 0.33333852887153625,
+    "accuracy": 0.8727200031280518,
+    "auc": 0.945054829120636
+  },
+  "epochs": 6,
+  "num_words": 10000
+}

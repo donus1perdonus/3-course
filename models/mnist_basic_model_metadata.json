@@ -1,0 +1,9 @@
+{
+  "model_name": "Базовая модель MNIST",
+  "description": "Базовая модель из книги Франсуа Шолле (раздел 2.1)",
+  "test_accuracy": 0.9805999994277954,
+  "test_loss": 0.06381261348724365,
+  "epochs": 5,
+  "architecture": "Dense(512, relu) -> Dense(10, softmax)",
+  "optimizer": "rmsprop"
+}

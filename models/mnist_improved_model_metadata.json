@@ -1,0 +1,9 @@
+{
+  "model_name": "Улучшенная модель MNIST",
+  "description": "Улучшенная модель с дополнительными слоями и dropout",
+  "test_accuracy": 0.9835000038146973,
+  "test_loss": 0.06131633371114731,
+  "epochs": 10,
+  "architecture": "Dense(512, relu) -> Dropout(0.3) -> Dense(256, relu) -> Dropout(0.3) -> Dense(128, relu) -> Dropout(0.2) -> Dense(10, softmax)",
+  "optimizer": "adam"
+}
