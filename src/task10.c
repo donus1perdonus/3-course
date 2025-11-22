@@ -1,8 +1,7 @@
 #include "task10.h"
 
 // Функция серверного процесса
-static int server_process(const char *fifo_path) {
-    int fd;
+static int server_process(int read_fd) {
     char buffer[1024];
     char line_buffer[1024] = {0};  // Буфер для неполных строк
     size_t line_buffer_len = 0;
@@ -10,24 +9,15 @@ static int server_process(const char *fifo_path) {
     ssize_t bytes_read;
     int found_length = -1;
     
-    printf("[Сервер] Открываю именованный канал для чтения...\n");
-    
-    // Открываем канал для чтения (блокируется до тех пор, пока клиент не откроет для записи)
-    fd = open(fifo_path, O_RDONLY);
-    if (fd == -1) {
-        perror("[Сервер] Ошибка открытия канала для чтения");
-        return 1;
-    }
-    
-    printf("[Сервер] Канал открыт, начинаю чтение...\n");
+    printf("[Сервер] Начинаю чтение из канала...\n");
     
     // Читаем строки из канала
     while (found_length == -1) {
-        bytes_read = read(fd, buffer, sizeof(buffer) - 1);
+        bytes_read = read(read_fd, buffer, sizeof(buffer) - 1);
         
         if (bytes_read == -1) {
             perror("[Сервер] Ошибка чтения из канала");
-            close(fd);
+            close(read_fd);
             return 1;
         }
         
@@ -88,7 +78,7 @@ static int server_process(const char *fifo_path) {
     }
     
     // Закрываем канал
-    if (close(fd) == -1) {
+    if (close(read_fd) == -1) {
         perror("[Сервер] Ошибка закрытия канала");
         return 1;
     }
@@ -98,21 +88,11 @@ static int server_process(const char *fifo_path) {
 }
 
 // Функция клиентского процесса
-static int client_process(const char *fifo_path) {
-    int fd;
+static int client_process(int write_fd) {
     char buffer[1024];
     int string_count = 0;
     
-    printf("[Клиент] Открываю именованный канал для записи...\n");
-    
-    // Открываем канал для записи
-    fd = open(fifo_path, O_WRONLY);
-    if (fd == -1) {
-        perror("[Клиент] Ошибка открытия канала для записи");
-        return 1;
-    }
-    
-    printf("[Клиент] Канал открыт, начинаю отправку строк...\n");
+    printf("[Клиент] Начинаю отправку строк в канал...\n");
     
     // Инициализируем генератор случайных чисел
     srand((unsigned int)time(NULL) ^ (unsigned int)getpid());
@@ -130,7 +110,7 @@ static int client_process(const char *fifo_path) {
         buffer[length + 1] = '\0';
         
         // Отправляем строку в канал
-        ssize_t bytes_written = write(fd, buffer, length + 1);
+        ssize_t bytes_written = write(write_fd, buffer, length + 1);
         if (bytes_written == -1) {
             // Если канал закрыт сервером, это нормально
             if (errno == EPIPE) {
@@ -138,12 +118,12 @@ static int client_process(const char *fifo_path) {
                 break;
             }
             perror("[Клиент] Ошибка записи в канал");
-            close(fd);
+            close(write_fd);
             return 1;
         }
         
         string_count++;
-        printf("[Клиент] Отправлена строка #%d длины %d: %.*s", 
+        printf("[Клиент] Отправлена строка #%d длины %d: %.*s\n", 
                string_count, length, length, buffer);
         
         // Небольшая задержка для наглядности
@@ -151,7 +131,7 @@ static int client_process(const char *fifo_path) {
     }
     
     // Закрываем канал
-    if (close(fd) == -1) {
+    if (close(write_fd) == -1) {
         perror("[Клиент] Ошибка закрытия канала");
         return 1;
     }
@@ -160,42 +140,38 @@ static int client_process(const char *fifo_path) {
     return 0;
 }
 
-int task10_main() { 
+int task10_main() {
     pid_t server_pid, client_pid;
     int server_status, client_status;
+    int pipe_fd[2]; // pipe_fd[0] - для чтения, pipe_fd[1] - для записи
     
-    // Удаляем старый канал, если он существует
-    unlink(FIFO_NAME);
+    printf("=== Задание 10: Клиент-сервер с анонимным каналом (pipe) ===\n");
+    printf("Создаю анонимный канал (pipe)...\n");
     
-    printf("=== Задание 10: Клиент-сервер с именованным каналом ===\n");
-    printf("Создаю именованный канал: %s\n", FIFO_NAME);
-    
-    // Создаем именованный канал (FIFO)
-    if (mkfifo(FIFO_NAME, 0666) == -1) {
-        if (errno != EEXIST) {
-            perror("Ошибка создания именованного канала");
-            return 1;
-        }
-        printf("Канал уже существует, использую существующий\n");
-    } else {
-        printf("Именованный канал создан успешно\n");
+    // Создаем анонимный канал (pipe)
+    if (pipe(pipe_fd) == -1) {
+        perror("Ошибка создания pipe");
+        return 1;
     }
+    
+    printf("Анонимный канал создан успешно (read_fd=%d, write_fd=%d)\n", 
+           pipe_fd[0], pipe_fd[1]);
     
     // Создаем серверный процесс
     server_pid = fork();
     if (server_pid == -1) {
         perror("Ошибка создания серверного процесса");
-        unlink(FIFO_NAME);
+        close(pipe_fd[0]);
+        close(pipe_fd[1]);
         return 1;
     }
     
     if (server_pid == 0) {
         // Дочерний процесс - сервер
-        exit(server_process(FIFO_NAME));
+        // Закрываем дескриптор для записи, он нам не нужен
+        close(pipe_fd[1]);
+        exit(server_process(pipe_fd[0]));
     }
-    
-    // Небольшая задержка, чтобы сервер успел открыть канал для чтения
-    usleep(100000); // 100 мс
     
     // Создаем клиентский процесс
     client_pid = fork();
@@ -203,14 +179,22 @@ int task10_main() {
         perror("Ошибка создания клиентского процесса");
         kill(server_pid, SIGTERM);
         waitpid(server_pid, NULL, 0);
-        unlink(FIFO_NAME);
+        close(pipe_fd[0]);
+        close(pipe_fd[1]);
         return 1;
     }
     
     if (client_pid == 0) {
         // Дочерний процесс - клиент
-        exit(client_process(FIFO_NAME));
+        // Закрываем дескриптор для чтения, он нам не нужен
+        close(pipe_fd[0]);
+        exit(client_process(pipe_fd[1]));
     }
+    
+    // Родительский процесс закрывает оба дескриптора
+    // (они больше не нужны, так как используются дочерними процессами)
+    close(pipe_fd[0]);
+    close(pipe_fd[1]);
     
     // Родительский процесс ждет завершения обоих процессов
     printf("\n[Родительский процесс] Ожидаю завершения сервера и клиента...\n\n");
@@ -233,13 +217,6 @@ int task10_main() {
             printf("[Родительский процесс] Клиент завершился с кодом: %d\n", 
                    WEXITSTATUS(client_status));
         }
-    }
-    
-    // Удаляем именованный канал
-    if (unlink(FIFO_NAME) == -1) {
-        perror("Ошибка удаления именованного канала");
-    } else {
-        printf("[Родительский процесс] Именованный канал удален\n");
     }
     
     printf("\n=== Задание 10 завершено ===\n");
