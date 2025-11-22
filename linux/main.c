@@ -60,7 +60,7 @@ int main(int argc, char *argv[]) {
             task10_main();
             break;
         case 11:
-            task11_main(argc, argv);
+            task11_main();
             break;
         case 12:
             task12_main(argc, argv);
