@@ -65,6 +65,59 @@ void runTask1(const std::vector<std::string>& flags)
     }
 }
 
+void runTask2(const std::vector<std::string>& flags) 
+{
+    double precision = 0.0001;
+    int num_threads = 4;
+    bool use_monte_carlo = true;
+    
+    // Парсим флаги
+    for (size_t i = 0; i < flags.size(); i++) {
+        if (flags[i] == "--monte-carlo") {
+            use_monte_carlo = true;
+        } else if (flags[i] == "--integration") {
+            use_monte_carlo = false;
+        } else if (flags[i] == "--help" || flags[i] == "-h") {
+            printHelp();
+            return;
+        } else {
+            // Пытаемся парсить как число
+            try {
+                double value = std::stod(flags[i]);
+                if (i == 0) {
+                    precision = value;
+                } else if (i == 1) {
+                    num_threads = std::max(1, (int)value);
+                }
+            } catch (...) {
+                std::cerr << "Предупреждение: неопознанный флаг '" << flags[i] << "'" << std::endl;
+            }
+        }
+    }
+    
+    std::cout << "Задание 2: Вычисление числа π с точностью " << precision << std::endl;
+    std::cout << "Метод: " << (use_monte_carlo ? "Монте-Карло" : "Численное интегрирование") << std::endl;
+    std::cout << "Потоков: " << num_threads << std::endl;
+    std::cout << "===========================================" << std::endl;
+    
+    // Инициализируем генератор случайных чисел
+    srand(time(nullptr));
+    
+    PiCalculator calculator(precision, num_threads);
+    
+    auto start = std::chrono::high_resolution_clock::now();
+    double pi_result = use_monte_carlo ? calculator.calculatePi() : calculator.calculatePiIntegration();
+    auto end = std::chrono::high_resolution_clock::now();
+    
+    std::chrono::duration<double> duration = end - start;
+    
+    std::cout << "\nРезультат:" << std::endl;
+    std::cout << "π ≈ " << pi_result << std::endl;
+    std::cout << "Точное значение π = " << M_PI << std::endl;
+    std::cout << "Погрешность: " << std::abs(pi_result - M_PI) << std::endl;
+    std::cout << "Время выполнения: " << duration.count() << " секунд" << std::endl;
+}
+
 void runTask3(const std::vector<std::string>& flags) 
 {
     std::string task = "3.1";
@@ -125,59 +178,6 @@ void runTask4(const std::vector<std::string>& flags)
     
     Task4Calculator calculator(n);
     calculator.runAllTasks(n);
-}
-
-void runTask2(const std::vector<std::string>& flags) 
-{
-    double precision = 0.0001;
-    int num_threads = 4;
-    bool use_monte_carlo = true;
-    
-    // Парсим флаги
-    for (size_t i = 0; i < flags.size(); i++) {
-        if (flags[i] == "--monte-carlo") {
-            use_monte_carlo = true;
-        } else if (flags[i] == "--integration") {
-            use_monte_carlo = false;
-        } else if (flags[i] == "--help" || flags[i] == "-h") {
-            printHelp();
-            return;
-        } else {
-            // Пытаемся парсить как число
-            try {
-                double value = std::stod(flags[i]);
-                if (i == 0) {
-                    precision = value;
-                } else if (i == 1) {
-                    num_threads = std::max(1, (int)value);
-                }
-            } catch (...) {
-                std::cerr << "Предупреждение: неопознанный флаг '" << flags[i] << "'" << std::endl;
-            }
-        }
-    }
-    
-    std::cout << "Задание 2: Вычисление числа π с точностью " << precision << std::endl;
-    std::cout << "Метод: " << (use_monte_carlo ? "Монте-Карло" : "Численное интегрирование") << std::endl;
-    std::cout << "Потоков: " << num_threads << std::endl;
-    std::cout << "===========================================" << std::endl;
-    
-    // Инициализируем генератор случайных чисел
-    srand(time(nullptr));
-    
-    PiCalculator calculator(precision, num_threads);
-    
-    auto start = std::chrono::high_resolution_clock::now();
-    double pi_result = use_monte_carlo ? calculator.calculatePi() : calculator.calculatePiIntegration();
-    auto end = std::chrono::high_resolution_clock::now();
-    
-    std::chrono::duration<double> duration = end - start;
-    
-    std::cout << "\nРезультат:" << std::endl;
-    std::cout << "π ≈ " << pi_result << std::endl;
-    std::cout << "Точное значение π = " << M_PI << std::endl;
-    std::cout << "Погрешность: " << std::abs(pi_result - M_PI) << std::endl;
-    std::cout << "Время выполнения: " << duration.count() << " секунд" << std::endl;
 }
 
 int main(int argc, char** argv) 
