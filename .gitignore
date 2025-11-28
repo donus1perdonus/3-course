@@ -41,3 +41,9 @@
 *.dwo
 
 build/
+
+#ml
+/.venv
+__pycache__/
+models/*.h5
+dogs-vs-cats/
