@@ -8,3 +8,8 @@ dogs-vs-cats/cats_vs_dogs_small/
 # Временные файлы моделей во время обучения
 tasks/*.h5
 tasks/*.keras
+
+#ossp/daa
+build-windows/
+build-linux/
+build/
