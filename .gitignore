@@ -1,4 +1,6 @@
-# cmake-build-debug directory
+#ossp/daa
+build-windows/
+build-linux/
 build/
 
 #ml
