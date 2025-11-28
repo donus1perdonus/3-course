@@ -161,23 +161,19 @@ void runTask3(const std::vector<std::string>& flags)
 
 void runTask4(const std::vector<std::string>& flags)
 {
-    int n = 10; // Значение по умолчанию
-    
-    // Парсим флаги
-    if (!flags.empty()) {
-        try {
-            n = std::max(1, std::stoi(flags[0]));
-        } catch (...) {
-            std::cerr << "Ошибка: неверное значение n. Используется значение по умолчанию (10)." << std::endl;
-        }
+    if (flags.empty()) {
+        std::cerr << "Ошибка: укажите путь к файлу с числами для задания 4." << std::endl;
+        return;
     }
+
+    const std::string file_path = flags[0];
     
     std::cout << "Задание 4: Использование OpenMP sections" << std::endl;
     std::cout << "===========================================" << std::endl;
-    std::cout << "Выполнение подзаданий 4.1-4.4 параллельно для n = " << n << std::endl;
+    std::cout << "Читаем числа из файла: " << file_path << std::endl;
     
-    Task4Calculator calculator(n);
-    calculator.runAllTasks(n);
+    Task4Calculator calculator;
+    calculator.runAllTasks(file_path);
 }
 
 int main(int argc, char** argv) 

@@ -5,6 +5,7 @@
 #include <iostream>
 #include <cstdlib>
 #include <ctime>
+#include <fstream>
 
 MatrixMultiplier::MatrixMultiplier(int n) : 
     size(n), A(n, std::vector<double>(n)), 
@@ -212,10 +213,6 @@ double PiCalculator::calculatePiIntegration()
 }
 
 // Реализация класса Task4Calculator
-Task4Calculator::Task4Calculator(int n) : n(n) 
-{
-}
-
 std::vector<int> Task4Calculator::decomposeIntoSquares(int num)
 {
     std::vector<int> result;
@@ -319,91 +316,120 @@ long long Task4Calculator::sumOfDivisors(int num)
     return sum;
 }
 
-void Task4Calculator::runAllTasks(int n_value)
+void Task4Calculator::runAllTasks(const std::string& file_path)
 {
-    std::vector<int> squares_result;
-    std::vector<long long> fibonacci_result;
-    long long prime_result = 0;
-    long long divisors_sum = 0;
-    
+    std::ifstream input(file_path);
+    if (!input.is_open())
+    {
+        std::cerr << "Не удалось открыть файл '" << file_path << "'" << std::endl;
+        return;
+    }
+
+    omp_lock_t file_lock;
+    omp_init_lock(&file_lock);
+
+    auto tryReadNumber = [&](int& value) -> bool
+    {
+        bool has_value = false;
+        omp_set_lock(&file_lock);
+        if (input >> value)
+        {
+            has_value = true;
+        }
+        omp_unset_lock(&file_lock);
+        return has_value;
+    };
+
+    std::cout << "\nРезультаты задания 4 (источник чисел: " << file_path << "):" << std::endl;
+    std::cout << "===========================================" << std::endl;
+    std::cout << "Каждое подзадание забирает числа по мере чтения общего файла." << std::endl;
+
     #pragma omp parallel sections
     {
         #pragma omp section
         {
-            // 4.1: Разложить число n на сумму квадратов
-            squares_result = decomposeIntoSquares(n_value);
-        }
-        
-        #pragma omp section
-        {
-            // 4.2: Нахождение n чисел Фибоначчи
-            fibonacci_result = findNFibonacciNumbers(n_value);
-        }
-        
-        #pragma omp section
-        {
-            // 4.3: Нахождение n-го простого числа
-            prime_result = findNthPrime(n_value);
-        }
-        
-        #pragma omp section
-        {
-            // 4.4: Сумма всех делителей числа n
-            divisors_sum = sumOfDivisors(n_value);
-        }
-    }
-    
-    // Выводим результаты
-    std::cout << "\nРезультаты задания 4 (n = " << n_value << "):" << std::endl;
-    std::cout << "===========================================" << std::endl;
-    
-    // 4.1
-    std::cout << "\n4.1. Разложение числа " << n_value << " на сумму квадратов:" << std::endl;
-    std::cout << n_value << " = ";
-    for (size_t i = 0; i < squares_result.size(); i++) {
-        int root = (int)std::sqrt(squares_result[i]);
-        std::cout << root << "²";
-        if (i < squares_result.size() - 1) {
-            std::cout << " + ";
-        }
-    }
-    std::cout << " = ";
-    for (size_t i = 0; i < squares_result.size(); i++) {
-        std::cout << squares_result[i];
-        if (i < squares_result.size() - 1) {
-            std::cout << " + ";
-        }
-    }
-    std::cout << std::endl;
-    
-    // 4.2
-    std::cout << "\n4.2. Первые " << n_value << " чисел Фибоначчи:" << std::endl;
-    for (size_t i = 0; i < fibonacci_result.size(); i++) {
-        std::cout << fibonacci_result[i];
-        if (i < fibonacci_result.size() - 1) {
-            std::cout << ", ";
-        }
-        if ((i + 1) % 10 == 0) {
-            std::cout << std::endl;
-        }
-    }
-    std::cout << std::endl;
-    
-    // 4.3
-    std::cout << "\n4.3. " << n_value << "-е простое число: " << prime_result << std::endl;
-    
-    // 4.4
-    std::cout << "\n4.4. Сумма всех делителей числа " << n_value << ": " << divisors_sum << std::endl;
-    std::cout << "Делители: ";
-    bool first = true;
-    for (int i = 1; i <= n_value; i++) {
-        if (n_value % i == 0) {
-            if (!first) {
-                std::cout << " + ";
+            int value = 0;
+            while (tryReadNumber(value))
+            {
+                auto squares = decomposeIntoSquares(value);
+                #pragma omp critical(output)
+                {
+                    std::cout << "\n[4.1] n = " << value << " -> ";
+                    std::cout << value << " = ";
+                    for (size_t i = 0; i < squares.size(); ++i)
+                    {
+                        int root = static_cast<int>(std::sqrt(squares[i]));
+                        std::cout << root << "²";
+                        if (i + 1 < squares.size())
+                        {
+                            std::cout << " + ";
+                        }
+                    }
+                    if (squares.empty())
+                    {
+                        std::cout << "(нет представления)";
+                    }
+                    std::cout << std::endl;
+                }
             }
-            std::cout << i;
-            first = false;
+        }
+
+        #pragma omp section
+        {
+            int value = 0;
+            while (tryReadNumber(value))
+            {
+                auto fib = findNFibonacciNumbers(value);
+                #pragma omp critical(output)
+                {
+                    std::cout << "\n[4.2] n = " << value << " -> ";
+                    if (fib.empty())
+                    {
+                        std::cout << "последовательность пуста";
+                    }
+                    else
+                    {
+                        std::cout << "первые " << value << " чисел: ";
+                        for (size_t i = 0; i < fib.size(); ++i)
+                        {
+                            std::cout << fib[i];
+                            if (i + 1 < fib.size())
+                            {
+                                std::cout << ", ";
+                            }
+                        }
+                    }
+                    std::cout << std::endl;
+                }
+            }
+        }
+
+        #pragma omp section
+        {
+            int value = 0;
+            while (tryReadNumber(value))
+            {
+                long long prime = findNthPrime(value);
+                #pragma omp critical(output)
+                {
+                    std::cout << "\n[4.3] n = " << value << " -> n-е простое число = " << prime << std::endl;
+                }
+            }
+        }
+
+        #pragma omp section
+        {
+            int value = 0;
+            while (tryReadNumber(value))
+            {
+                long long sum = sumOfDivisors(value);
+                #pragma omp critical(output)
+                {
+                    std::cout << "\n[4.4] n = " << value << " -> сумма делителей = " << sum << std::endl;
+                }
+            }
         }
     }
-    std::cout << " = " << divisors_sum << std::endl;
+
+    omp_destroy_lock(&file_lock);
 }

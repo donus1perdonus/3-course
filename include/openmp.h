@@ -2,6 +2,7 @@
 #define OPENMP_MATRIX_MULTIPLIER_H
 
 #include <vector>
+#include <string>
 
 
 class MatrixMultiplier 
@@ -54,11 +55,8 @@ public:
 // Класс для задания 4: использование OpenMP sections
 class Task4Calculator 
 {
-private:
-    int n;
-
 public:
-    Task4Calculator(int n);
+    Task4Calculator() = default;
     
     // 4.1: Разложить число n на сумму квадратов
     std::vector<int> decomposeIntoSquares(int num);
@@ -73,7 +71,7 @@ public:
     long long sumOfDivisors(int num);
     
     // Выполнить все 4 подзадания параллельно с помощью sections
-    void runAllTasks(int n_value);
+    void runAllTasks(const std::string& file_path);
 };
 
 #endif // OPENMP_MATRIX_MULTIPLIER_H
