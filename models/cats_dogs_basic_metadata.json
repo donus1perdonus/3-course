@@ -1,0 +1,9 @@
+{
+  "model_name": "Базовая модель Cats vs Dogs",
+  "description": "Модель из главы 8.2 без модификаций",
+  "test_metrics": {
+    "accuracy": 0.7045000195503235,
+    "loss": 0.5855039358139038
+  },
+  "epochs": 30
+}

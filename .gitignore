@@ -2,3 +2,9 @@
 __pycache__/
 /build
 models/*.h5
+dogs-vs-cats/train/
+dogs-vs-cats/test1.zip
+dogs-vs-cats/cats_vs_dogs_small/
+# Временные файлы моделей во время обучения
+tasks/*.h5
+tasks/*.keras
