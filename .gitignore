@@ -6,6 +6,5 @@ build/
 #ml
 /.venv
 __pycache__/
-/build
 models/*.h5
 dogs-vs-cats/
