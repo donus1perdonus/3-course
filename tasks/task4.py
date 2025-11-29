@@ -473,7 +473,7 @@ def train_improved_model(
         train_dataset,
         validation_dataset,
         "convnet_from_scratch_with_augmentation",
-        epochs=100,
+        epochs=30,
         use_early_stopping=True,
         use_lr_reduction=True,
     )

@@ -1,0 +1,9 @@
+{
+  "model_name": "Улучшенная модель Cats vs Dogs",
+  "description": "Модель с batch normalization, ELU, расширенным обогащением данных, dropout и early stopping",
+  "test_metrics": {
+    "accuracy": 0.7419999837875366,
+    "loss": 0.5328367948532104
+  },
+  "epochs": 30
+}
