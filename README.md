@@ -6,7 +6,6 @@
 ```
 .
 ├─ CMakeLists.txt
-├─ Dockerfile
 ├─ README.md
 ├─ include/
 │  ├─ openmp.h
